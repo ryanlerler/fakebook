@@ -1,7 +1,95 @@
-import React from 'react'
+import React, { useState } from "react";
+import { Button, Form } from "react-bootstrap";
+import { ref as databaseRef, push, set } from "firebase/database";
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { database, storage } from "../firebase";
+import { v4 as uuidv4 } from "uuid";
 
-export default function Composer() {
+export default function Composer({ email }) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [fileInputFile, setFileInputFile] = useState(null);
+  const [fileInputValue, setFileInputValue] = useState("");
+
+  const THREADS_DB_KEY = "threads";
+  const STORAGE_KEY = "media/";
+
+  const handleFileChange = ({ target }) => {
+    const { files, value } = target;
+    setFileInputFile(files[0]);
+    setFileInputValue(value);
+  };
+
+  const clearInputFields = () => {
+    setTitle("");
+    setDescription("");
+    setFileInputFile(null);
+    setFileInputValue("");
+  };
+
+  const writeData = (url) => {
+    const threadsRef = databaseRef(database, THREADS_DB_KEY);
+    const postRef = push(threadsRef);
+
+    set(postRef, {
+      date: new Date().toLocaleString(),
+      // email: email,
+      title: title,
+      description: description,
+      url: url,
+    });
+
+    clearInputFields();
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const uniqueFileName = fileInputFile.name + uuidv4();
+
+    const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
+    uploadBytes(fileRef, fileInputFile).then(() => {
+      getDownloadURL(fileRef).then((url) => writeData(url));
+    });
+  };
+
   return (
-    <div>Composer</div>
-  )
+    <div>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="text"
+            placeholder="Add A Title"
+            value={title}
+            onChange={({ target }) => setTitle(target.value)}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="text"
+            placeholder="Add A Description"
+            value={description}
+            onChange={({ target }) => setDescription(target.value)}
+            required
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="file"
+            multiple
+            value={fileInputValue}
+            onChange={handleFileChange}
+          />
+        </Form.Group>
+        <Button variant="danger" type="submit">
+          POST
+        </Button>
+      </Form>
+    </div>
+  );
 }
