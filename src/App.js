@@ -82,9 +82,9 @@ function App() {
               path="/threads"
               element={
                 <>
-                  <RequireAuth>
+                  {/* <RequireAuth> */}
                     <Threads loggedInUser={loggedInUser} />
-                  </RequireAuth>
+                  {/* </RequireAuth> */}
                 </>
               }
             />
@@ -93,9 +93,9 @@ function App() {
               path="/composer"
               element={
                 <>
-                  <RequireAuth loggedInUser={loggedInUser}>
+                  {/* <RequireAuth loggedInUser={loggedInUser}> */}
                     <Composer />
-                  </RequireAuth>
+                  {/* </RequireAuth> */}
                 </>
               }
             />

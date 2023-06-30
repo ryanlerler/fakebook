@@ -8,15 +8,13 @@ import {
 } from "firebase/storage";
 import { database, storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
+import { THREADS_DB_KEY, STORAGE_KEY } from "../constants";
 
-export default function Composer({ email }) {
+export default function Composer({ displayName }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileInputFile, setFileInputFile] = useState(null);
   const [fileInputValue, setFileInputValue] = useState("");
-
-  const THREADS_DB_KEY = "threads";
-  const STORAGE_KEY = "media/";
 
   const handleFileChange = ({ target }) => {
     const { files, value } = target;
@@ -37,7 +35,7 @@ export default function Composer({ email }) {
 
     set(postRef, {
       date: new Date().toLocaleString(),
-      // email: email,
+      // displayName: displayName,
       title: title,
       description: description,
       url: url,
@@ -50,8 +48,8 @@ export default function Composer({ email }) {
     e.preventDefault();
 
     const uniqueFileName = fileInputFile.name + uuidv4();
-
     const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
+    
     uploadBytes(fileRef, fileInputFile).then(() => {
       getDownloadURL(fileRef).then((url) => writeData(url));
     });
@@ -69,6 +67,7 @@ export default function Composer({ email }) {
             required
           />
         </Form.Group>
+
         <Form.Group className="mb-3">
           <Form.Control
             type="text"
@@ -78,6 +77,7 @@ export default function Composer({ email }) {
             required
           />
         </Form.Group>
+
         <Form.Group className="mb-3">
           <Form.Control
             type="file"
@@ -86,6 +86,7 @@ export default function Composer({ email }) {
             onChange={handleFileChange}
           />
         </Form.Group>
+        
         <Button variant="danger" type="submit">
           POST
         </Button>

@@ -12,3 +12,8 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.thread-img {
+  height: 50vh;
+  width: 100%;
+}
