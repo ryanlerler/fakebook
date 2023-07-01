@@ -10,7 +10,7 @@ import { database, storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { THREADS_DB_KEY, STORAGE_KEY } from "../constants";
 
-export default function Composer({ displayName }) {
+export default function Composer({ displayName, loggedInUser }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileInputFile, setFileInputFile] = useState(null);
@@ -32,6 +32,10 @@ export default function Composer({ displayName }) {
   const writeData = (url) => {
     const threadsRef = databaseRef(database, THREADS_DB_KEY);
     const postRef = push(threadsRef);
+    // Initialize likes object with initial value of false while the key dynamically represents the current logged in user
+    const likes = {
+      [loggedInUser]: false,
+    };
 
     set(postRef, {
       date: new Date().toLocaleString(),
@@ -39,6 +43,7 @@ export default function Composer({ displayName }) {
       title: title,
       description: description,
       url: url,
+      likes: likes,
     });
 
     clearInputFields();
@@ -49,7 +54,7 @@ export default function Composer({ displayName }) {
 
     const uniqueFileName = fileInputFile.name + uuidv4();
     const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
-    
+
     uploadBytes(fileRef, fileInputFile).then(() => {
       getDownloadURL(fileRef).then((url) => writeData(url));
     });
@@ -86,7 +91,7 @@ export default function Composer({ displayName }) {
             onChange={handleFileChange}
           />
         </Form.Group>
-        
+
         <Button variant="danger" type="submit">
           POST
         </Button>

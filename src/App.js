@@ -51,7 +51,7 @@ function App() {
           )}
 
           {loggedInUser.uid && loggedInUser.accessToken ? null : (
-            <Link to="/login">
+            <Link to="/auth">
               <Button>Log In / Sign Up</Button>
             </Link>
           )}
@@ -83,7 +83,7 @@ function App() {
               element={
                 <>
                   {/* <RequireAuth> */}
-                    <Threads loggedInUser={loggedInUser} />
+                  <Threads loggedInUser={loggedInUser.uid} />
                   {/* </RequireAuth> */}
                 </>
               }
@@ -94,13 +94,16 @@ function App() {
               element={
                 <>
                   {/* <RequireAuth loggedInUser={loggedInUser}> */}
-                    <Composer />
+                  <Composer />
                   {/* </RequireAuth> */}
                 </>
               }
             />
 
-            <Route path="/post/:id" element={<Post />} />
+            <Route
+              path="/post/:id"
+              element={<Post />}
+            />
           </Routes>
         </UserContext.Provider>
       </header>
