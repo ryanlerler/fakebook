@@ -51,7 +51,7 @@ function App() {
           )}
 
           {loggedInUser.uid && loggedInUser.accessToken ? null : (
-            <Link to="login">
+            <Link to="/login">
               <Button>Log In / Sign Up</Button>
             </Link>
           )}
@@ -100,7 +100,7 @@ function App() {
               }
             />
 
-            <Route path="/post:id" element={<Post />} />
+            <Route path="/post/:id" element={<Post />} />
           </Routes>
         </UserContext.Provider>
       </header>

@@ -3,6 +3,7 @@ import { ref as databaseRef, onChildAdded } from "firebase/database";
 import { database } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
 import { Card, Col, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 export default function Threads() {
   const [threads, setThreads] = useState([]);
@@ -21,13 +22,15 @@ export default function Threads() {
         {threads.map((thread) => (
           <div key={thread.key}>
             <Col>
-              <Card>  
-                <Card.Img
-                  variant="top"
-                  src={thread.val.url}
-                  alt={thread.val.title}
-                  className="thread-img"
-                />
+              <Card>
+                <Link to={`/post/${thread.key}`}>
+                  <Card.Img
+                    variant="top"
+                    src={thread.val.url}
+                    alt={thread.val.title}
+                    className="thread-img"
+                  />
+                </Link>
 
                 <Card.Body>
                   <Card.Title>{thread.val.title}</Card.Title>
