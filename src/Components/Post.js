@@ -29,12 +29,14 @@ export default function Post() {
     <div>
       {post.key && (
         <Card>
-          <Card.Img
-            variant="top"
-            src={post.val.url}
-            alt={post.val.title}
-            className="thread-img"
-          />
+          {post.val.url && (
+            <Card.Img
+              variant="top"
+              src={post.val.url}
+              alt={post.val.title}
+              className="thread-img"
+            />
+          )}
 
           <Card.Body>
             <Card.Title>{post.val.title}</Card.Title>

@@ -51,13 +51,18 @@ export default function Composer({ displayName, loggedInUser }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(e);
 
-    const uniqueFileName = fileInputFile.name + uuidv4();
-    const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
+    if (fileInputFile) {
+      const uniqueFileName = fileInputFile.name + uuidv4();
+      const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
 
-    uploadBytes(fileRef, fileInputFile).then(() => {
-      getDownloadURL(fileRef).then((url) => writeData(url));
-    });
+      uploadBytes(fileRef, fileInputFile).then(() => {
+        getDownloadURL(fileRef).then((url) => writeData(url));
+      });
+    } else {
+      writeData(null);
+    }
   };
 
   return (
@@ -70,6 +75,8 @@ export default function Composer({ displayName, loggedInUser }) {
             value={title}
             onChange={({ target }) => setTitle(target.value)}
             required
+            minLength={3}
+            maxLength={64}
           />
         </Form.Group>
 
@@ -84,6 +91,7 @@ export default function Composer({ displayName, loggedInUser }) {
         </Form.Group>
 
         <Form.Group className="mb-3">
+          <Form.Label>Optional</Form.Label>
           <Form.Control
             type="file"
             multiple

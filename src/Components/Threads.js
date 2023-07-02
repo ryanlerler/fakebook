@@ -81,17 +81,20 @@ export default function Threads({ loggedInUser }) {
               <Col>
                 <Card>
                   <Link to={`/post/${thread.key}`}>
-                    <Card.Img
-                      variant="top"
-                      src={thread.val.url}
-                      alt={thread.val.title}
-                      className="thread-img"
-                    />
+                    {thread.val.url ? (
+                      <Card.Img
+                        variant="top"
+                        src={thread.val.url}
+                        alt={thread.val.title}
+                        className="thread-img"
+                      />
+                    ) : (
+                      <p>No image</p>
+                    )}
                   </Link>
 
                   <Card.Body>
                     <Card.Title>{thread.val.title}</Card.Title>
-                    <Card.Text>{thread.val.date}</Card.Text>
 
                     <Button
                       variant="white"
@@ -99,6 +102,8 @@ export default function Threads({ loggedInUser }) {
                     >
                       ❤️ {likeCount}
                     </Button>
+
+                    <Card.Text>{thread.val.date}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
