@@ -28,7 +28,7 @@ function LoginForm() {
         // Signed in
         const user = userCredential.user;
         console.log(user);
-        navigate("./threads");
+        navigate("/threads");
         // ...
       })
       .catch((error) => {
@@ -57,7 +57,7 @@ function LoginForm() {
         // Signed in
         const user = userCredential.user;
         console.log(user);
-        navigate("./threads");
+        navigate("/threads");
         // ...
       })
       .catch((error) => {
