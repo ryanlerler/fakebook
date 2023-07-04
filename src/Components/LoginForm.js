@@ -13,28 +13,72 @@ import {
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
+
+
 function LoginForm() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
   // Sign up function
-  const signUp = async () => {
-    const user = await createUserWithEmailAndPassword(auth, email, password);
-    console.log(user);
-    setEmail("");
-    setPassword("");
-    navigate("/threads");
+  const signUp = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        navigate("./threads");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        console.log(errorCode);
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        if (errorCode === "auth/invalid-email") {
+          setMessage("Please Key in a Valid Email Address.");
+        } else if (errorCode === "auth/email-already-in-use") {
+          setMessage("Email in use. Kindly pick another email ");
+        } else if (errorCode === "auth/wrong-password") {
+          setMessage("Incorrect Password. Try again!");
+        } else if (errorCode === "auth/weak-password") {
+          setMessage("Please key in a password of at least 6 characters.");
+        } else {
+          return setMessage("");
+        }
+        // ..
+      });
+  };
+// Sign In Function
+  const signIn = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        navigate("./threads");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        console.log(errorCode);
+        const errorMessage = error.message;
+        console.log(errorMessage);
+        if (errorCode === "auth/invalid-email") {
+          setMessage("Please Key in a Valid Email Address.");
+        } else if (errorCode === "auth/email-already-in-use") {
+          setMessage("Email in use. Kindly pick another email ");
+        } else if (errorCode === "auth/wrong-password") {
+          setMessage("Incorrect Password. Try again!");
+        } else if (errorCode === "auth/weak-password") {
+          setMessage("Please key in a password of at least 6 characters.");
+        } else {
+          return setMessage("");
+        }
+      });
   };
 
-  // Sign In Function
-  const signIn = async () => {
-    const user = await signInWithEmailAndPassword(auth, email, password);
-    console.log(user);
-    setEmail("");
-    setPassword("");
-    navigate("/threads");
-  };
   return (
     <div className="Login">
       <Container>
@@ -76,6 +120,7 @@ function LoginForm() {
                       placeholder="Password"
                       onChange={(e) => setPassword(e.target.value)}
                     />
+                    <p className="text-danger">{message}</p>
                   </Form.Group>
                 </Form>
               </div>
