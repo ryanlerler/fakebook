@@ -5,10 +5,10 @@ import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { auth } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { Button, Container, Navbar } from "react-bootstrap";
-import AuthForm from "./Components/AuthForm";
 import Threads from "./Components/Threads";
 import Composer from "./Components/Composer";
 import Post from "./Components/Post";
+import LoginForm from "./Components/LoginForm";
 
 export const UserContext = React.createContext();
 
@@ -21,14 +21,12 @@ function App() {
   const [loggedInUser, setLoggedInUser] = useState({});
 
   useEffect(() => {
-    console.log(loggedInUser);
-
     onAuthStateChanged(auth, (loggedInUser) => {
       if (loggedInUser) {
         setLoggedInUser(loggedInUser);
       }
     });
-  }, [loggedInUser]);
+  }, []);
 
   return (
     <div className="App">
@@ -43,7 +41,8 @@ function App() {
                 <Navbar.Toggle />
                 <Navbar.Collapse className="justify-content-end">
                   <Navbar.Text>
-                    <a href="#login">{loggedInUser.displayName}</a>
+                    {/**  TODO: change to displayName */}
+                    <a href="#login">{loggedInUser.email}</a>
                   </Navbar.Text>
                 </Navbar.Collapse>
               </Container>
@@ -58,7 +57,11 @@ function App() {
 
           {loggedInUser.uid && loggedInUser.accessToken && (
             <Button
-              onClick={() => signOut(auth).then(() => setLoggedInUser({}))}
+              onClick={() =>
+                signOut(auth).then(() => {
+                  setLoggedInUser({});
+                })
+              }
             >
               Log Out
             </Button>
@@ -70,21 +73,21 @@ function App() {
               element={
                 <>
                   <RequireAuth loggedInUser={loggedInUser}>
-                    <Threads />
+                    <Threads loggedInUser={loggedInUser.uid} />
                   </RequireAuth>
                 </>
               }
             />
 
-            <Route path="/auth" element={<AuthForm />} />
+            <Route path="/auth" element={<LoginForm />} />
 
             <Route
               path="/threads"
               element={
                 <>
-                  {/* <RequireAuth> */}
-                  <Threads loggedInUser={loggedInUser.uid} />
-                  {/* </RequireAuth> */}
+                  <RequireAuth loggedInUser={loggedInUser}>
+                    <Threads loggedInUser={loggedInUser.uid} />
+                  </RequireAuth>
                 </>
               }
             />
@@ -93,16 +96,16 @@ function App() {
               path="/composer"
               element={
                 <>
-                  {/* <RequireAuth loggedInUser={loggedInUser}> */}
-                  <Composer />
-                  {/* </RequireAuth> */}
+                  <RequireAuth loggedInUser={loggedInUser}>
+                    <Composer />
+                  </RequireAuth>
                 </>
               }
             />
 
             <Route
               path="/post/:id"
-              element={<Post />}
+              element={<Post loggedInUser={loggedInUser} />}
             />
           </Routes>
         </UserContext.Provider>
