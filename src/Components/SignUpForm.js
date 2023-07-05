@@ -77,6 +77,11 @@ function SignUpForm() {
         console.log(errorCode);
         const errorMessage = error.message;
         console.log(errorMessage);
+        if(errorCode === "auth/email-already-in-use"){
+          setEmailMessage("Email in use. Kindly pick another email ");
+        }else{
+          return setEmailMessage("")
+        }
       });
   };
 
