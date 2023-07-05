@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { database } from "../firebase";
 import { ref as databaseRef, get, update } from "firebase/database";
-import { THREADS_DB_KEY } from "../constants";
+import { GOOGLE_MAPS_API_KEY, THREADS_DB_KEY } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Form } from "react-bootstrap";
+import axios from "axios";
 
 export default function Post({ loggedInUser }) {
   const { id } = useParams();
@@ -29,23 +30,35 @@ export default function Post({ loggedInUser }) {
   const writeData = (e) => {
     e.preventDefault();
 
-    const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
 
-    const newComment = {
-      // TODO: change to displayName
-      displayName: loggedInUser.email,
-      comment: commentInput,
-      date: new Date().toLocaleString(),
-    };
+      axios
+        .get(
+          ` https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+        )
+        .then((data) => {
+          const location = data.data.results[0].formatted_address;
+          const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
 
-    const allComments = [...comments, newComment];
+          const newComment = {
+            // TODO: change to displayName
+            displayName: loggedInUser.email,
+            comment: commentInput,
+            date: new Date().toLocaleString(),
+            location: location,
+          };
 
-    update(threadRef, {
-      comments: allComments,
+          const allComments = [...comments, newComment];
+
+          update(threadRef, {
+            comments: allComments,
+          });
+
+          setCommentInput("");
+          setComments(allComments);
+        });
     });
-
-    setCommentInput("");
-    setComments(allComments);
   };
 
   return (
@@ -64,7 +77,9 @@ export default function Post({ loggedInUser }) {
           <Card.Body>
             <Card.Title>{post.val.title}</Card.Title>
             <Card.Text>{post.val.description}</Card.Text>
-            <Card.Text>{post.val.date}</Card.Text>
+            <Card.Text>
+              {post.val.date} - {post.val.location}
+            </Card.Text>
             <hr />
             <Form onSubmit={writeData}>
               <Form.Group className="mb-3">
@@ -76,7 +91,8 @@ export default function Post({ loggedInUser }) {
                     <div key={comment.date}>
                       <Card.Text> {comment.comment}</Card.Text>
                       <Card.Text>
-                        <strong>{comment.displayName} </strong>- {comment.date}
+                        <strong>{comment.displayName} </strong>- {comment.date}-{" "}
+                        {comment.location}
                       </Card.Text>
                     </div>
                   ))}

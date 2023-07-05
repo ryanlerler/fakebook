@@ -8,7 +8,8 @@ import {
 } from "firebase/storage";
 import { database, storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
-import { THREADS_DB_KEY, STORAGE_KEY } from "../constants";
+import { THREADS_DB_KEY, STORAGE_KEY, GOOGLE_MAPS_API_KEY } from "../constants";
+import axios from "axios";
 
 export default function Composer({ displayName, loggedInUser }) {
   const [title, setTitle] = useState("");
@@ -29,7 +30,7 @@ export default function Composer({ displayName, loggedInUser }) {
     setFileInputValue("");
   };
 
-  const writeData = (url) => {
+  const writeData = (url, location) => {
     const threadsRef = databaseRef(database, THREADS_DB_KEY);
     const postRef = push(threadsRef);
     // Initialize likes object with initial value of false while the key dynamically represents the current logged in user
@@ -44,6 +45,7 @@ export default function Composer({ displayName, loggedInUser }) {
       description: description,
       url: url,
       likes: likes,
+      location: location,
     });
 
     clearInputFields();
@@ -53,16 +55,31 @@ export default function Composer({ displayName, loggedInUser }) {
     e.preventDefault();
     console.log(e);
 
-    if (fileInputFile) {
-      const uniqueFileName = fileInputFile.name + uuidv4();
-      const fileRef = storageRef(storage, `${STORAGE_KEY}${uniqueFileName}`);
+    navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      console.log(latitude, longitude);
 
-      uploadBytes(fileRef, fileInputFile).then(() => {
-        getDownloadURL(fileRef).then((url) => writeData(url));
-      });
-    } else {
-      writeData(null);
-    }
+      axios
+        .get(
+          ` https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+        )
+        .then((data) => {
+          const location = data.data.results[0].formatted_address;
+          if (fileInputFile) {
+            const uniqueFileName = fileInputFile.name + uuidv4();
+            const fileRef = storageRef(
+              storage,
+              `${STORAGE_KEY}${uniqueFileName}`
+            );
+
+            uploadBytes(fileRef, fileInputFile).then(() => {
+              getDownloadURL(fileRef).then((url) => writeData(url, location));
+            });
+          } else {
+            writeData(null, location);
+          }
+        });
+    });
   };
 
   return (
