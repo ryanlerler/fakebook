@@ -17,6 +17,8 @@ function SignUpForm() {
   const [emailmessage, setEmailMessage] = useState("");
   const [usernamemessage, setUsernameMessage] = useState("");
   const [passwordmessage, setPasswordMessage] = useState("");
+  
+  
 
   // Handle Email change
   const handleEmailChange = (e) => {
