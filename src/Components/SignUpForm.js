@@ -162,7 +162,7 @@ function SignUpForm() {
           <br />
           <div className="w-100 text-center mt2 fs-5">
             Already have an account?
-            <Button onClick={navigate("/login")}>Log In </Button>
+            <Button onClick={()=>navigate("/login")}>Log In </Button>
           </div>
         </div>
       </Container>
