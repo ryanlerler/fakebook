@@ -3,7 +3,7 @@ import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import { Button, Card } from "react-bootstrap";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -17,8 +17,6 @@ function SignUpForm() {
   const [emailmessage, setEmailMessage] = useState("");
   const [usernamemessage, setUsernameMessage] = useState("");
   const [passwordmessage, setPasswordMessage] = useState("");
-  
-  
 
   // Handle Email change
   const handleEmailChange = (e) => {
@@ -72,6 +70,7 @@ function SignUpForm() {
       .then((userCredential) => {
         const user = userCredential.user;
         console.log(user);
+        updateProfile(auth.currentUser,{displayName: username})
         navigate("/threads");
       })
       .catch((error) => {
@@ -164,7 +163,7 @@ function SignUpForm() {
           <br />
           <div className="w-100 text-center mt2 fs-5">
             Already have an account?
-            <Button onClick={()=>navigate("/login")}>Log In </Button>
+            <Button onClick={navigate("/login")}>Log In </Button>
           </div>
         </div>
       </Container>
