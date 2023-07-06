@@ -10,17 +10,75 @@ import { database, storage } from "../firebase";
 import { v4 as uuidv4 } from "uuid";
 import { THREADS_DB_KEY, STORAGE_KEY, GOOGLE_MAPS_API_KEY } from "../constants";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Composer({ displayName, loggedInUser }) {
+  const navigate = useNavigate("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileInputFile, setFileInputFile] = useState(null);
   const [fileInputValue, setFileInputValue] = useState("");
+  const [fileType, setFileType] = useState("");
+
+  const determineFileType = (file) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+    const videoExtensions = ["mp4", "avi", "mov", "mkv"];
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    if (imageExtensions.includes(extension)) {
+      return "image";
+    } else if (videoExtensions.includes(extension)) {
+      return "video";
+    }
+
+    // Read the file using FileReader and check its signature
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const arr = new Uint8Array(reader.result).subarray(0, 4);
+      let header = "";
+      for (let i = 0; i < arr.length; i++) {
+        header += arr[i].toString(16);
+      }
+
+      if (header.startsWith("89504e47")) {
+        return "image"; // PNG file signature
+      } else if (header.startsWith("47494638")) {
+        return "image"; // GIF file signature
+      } else if (header.startsWith("ffd8")) {
+        return "image"; // JPEG file signature
+      } else if (header.startsWith("52494646") && header.endsWith("57454250")) {
+        return "video"; // WebP file signature
+      } else if (
+        header.startsWith("00000018") ||
+        header.startsWith("00000020") ||
+        header.startsWith("0000001c") ||
+        header.startsWith("00000024") ||
+        header.startsWith("00000028")
+      ) {
+        return "video"; // MP4 file signature
+      } else if (header.startsWith("3026b2758e66cf11a6d900aa0062ce6c")) {
+        return "video"; // AVI file signature
+      } else if (
+        header.startsWith("00000014") ||
+        header.startsWith("00000018") ||
+        header.startsWith("0000001c")
+      ) {
+        return "video"; // QuickTime (MOV) file signature
+      }
+
+      return "unknown";
+    };
+    reader.readAsArrayBuffer(file.slice(0, 4));
+  };
 
   const handleFileChange = ({ target }) => {
     const { files, value } = target;
+    const fileType = determineFileType(files[0]);
+    console.log(fileType);
     setFileInputFile(files[0]);
     setFileInputValue(value);
+    setFileType(fileType);
   };
 
   const clearInputFields = () => {
@@ -46,6 +104,7 @@ export default function Composer({ displayName, loggedInUser }) {
       url: url,
       likes: likes,
       location: location,
+      fileType: fileType,
     });
 
     clearInputFields();
@@ -78,7 +137,8 @@ export default function Composer({ displayName, loggedInUser }) {
           } else {
             writeData(null, location);
           }
-        });
+        })
+        .then(() => navigate("/threads"));
     });
   };
 

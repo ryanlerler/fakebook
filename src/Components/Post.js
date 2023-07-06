@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { database } from "../firebase";
 import { ref as databaseRef, get, update } from "firebase/database";
 import { GOOGLE_MAPS_API_KEY, THREADS_DB_KEY } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Form } from "react-bootstrap";
 import axios from "axios";
+import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
+import NoImage from "../assets/noimage.jpg";
 
 export default function Post({ loggedInUser }) {
   const { id } = useParams();
@@ -12,6 +14,9 @@ export default function Post({ loggedInUser }) {
   const [post, setPost] = useState({});
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState([]);
+  const [selectedEmoji, setSelectedEmoji] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +40,7 @@ export default function Post({ loggedInUser }) {
 
       axios
         .get(
-          ` https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
         )
         .then((data) => {
           const location = data.data.results[0].formatted_address;
@@ -61,14 +66,49 @@ export default function Post({ loggedInUser }) {
     });
   };
 
+  const insertEmoji = (emojiData) => {
+    setSelectedEmoji(emojiData.unified);
+    const commentInputRef = textareaRef.current;
+
+    if (commentInputRef) {
+      const startPos = commentInputRef.selectionStart;
+      const endPos = commentInputRef.selectionEnd;
+      const commentValue = commentInputRef.value;
+      const emoji = String.fromCodePoint(parseInt(emojiData.unified, 16));
+      const updatedValue =
+        commentValue.substring(0, startPos) +
+        emoji +
+        commentValue.substring(endPos);
+
+      setCommentInput(updatedValue);
+      commentInputRef.focus();
+      commentInputRef.setSelectionRange(startPos + 2, startPos + 2);
+    }
+  };
+
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker(!showEmojiPicker);
+  };
+
   return (
     <div>
       {post.key && (
         <Card>
-          {post.val.url && (
+          {post.val.url && post.val.fileType === "image" ? (
             <Card.Img
               variant="top"
               src={post.val.url}
+              alt={post.val.title}
+              className="thread-img"
+            />
+          ) : post.val.url && post.val.fileType === "video" ? (
+            <video autoPlay controls className="post-video">
+              <source src={post.val.url} />
+            </video>
+          ) : (
+            <Card.Img
+              variant="top"
+              src={NoImage}
               alt={post.val.title}
               className="thread-img"
             />
@@ -81,6 +121,7 @@ export default function Post({ loggedInUser }) {
               {post.val.date} - {post.val.location}
             </Card.Text>
             <hr />
+
             <Form onSubmit={writeData}>
               <Form.Group className="mb-3">
                 <Form.Label>Comments</Form.Label>
@@ -97,13 +138,34 @@ export default function Post({ loggedInUser }) {
                     </div>
                   ))}
 
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="Add comment"
-                  value={commentInput}
-                  onChange={({ target }) => setCommentInput(target.value)}
-                />
+                <div className="position-relative">
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Add comment"
+                    value={commentInput}
+                    onChange={({ target }) => setCommentInput(target.value)}
+                    ref={textareaRef}
+                  />
+
+                  {showEmojiPicker && (
+                    <EmojiPicker
+                      onEmojiClick={insertEmoji}
+                      emojiStyle={EmojiStyle.FACEBOOK}
+                      disableSearchBar
+                      disableSkinTonePicker
+                      native
+                    />
+                  )}
+
+                  <Button
+                    variant="light"
+                    className="position-absolute top-0 end-0 me-2 mt-2"
+                    onClick={toggleEmojiPicker}
+                  >
+                    😃
+                  </Button>
+                </div>
                 <br />
 
                 <Button variant="danger" type="submit">

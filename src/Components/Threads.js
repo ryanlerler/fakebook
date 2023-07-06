@@ -4,6 +4,7 @@ import { database } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import NoImage from "../assets/noimage.jpg";
 
 export default function Threads({ loggedInUser }) {
   const [threads, setThreads] = useState([]);
@@ -68,49 +69,53 @@ export default function Threads({ loggedInUser }) {
     });
   };
 
+  const threadsRendered = threads.map((thread) => {
+    const likeCount = Object.values(likes[thread.key]).filter(Boolean).length;
+
+    return (
+      <div key={thread.key}>
+        <Col>
+          <Card>
+            <Link to={`/post/${thread.key}`}>
+              {thread.val.url && thread.val.fileType === "image" ? (
+                <Card.Img
+                  variant="top"
+                  src={thread.val.url}
+                  alt={thread.val.title}
+                  className="thread-img"
+                />
+              ) : thread.val.url && thread.val.fileType === "video" ? (
+                <video className="threads-video">
+                  <source src={thread.val.url} />
+                </video>
+              ) : (
+                <Card.Img
+                  variant="top"
+                  src={NoImage}
+                  alt={thread.val.title}
+                  className="thread-img"
+                />
+              )}
+            </Link>
+
+            <Card.Body>
+              <Card.Title>{thread.val.title}</Card.Title>
+
+              <Button variant="white" onClick={() => handleLikes(thread.key)}>
+                ❤️ {likeCount}
+              </Button>
+
+              <Card.Text>{thread.val.date}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+      </div>
+    );
+  });
+
   return (
-    <div>
-      <Row xs={1} md={2} className="g-4">
-        {threads.map((thread) => {
-          const likeCount = Object.values(likes[thread.key]).filter(
-            Boolean
-          ).length;
-
-          return (
-            <div key={thread.key}>
-              <Col>
-                <Card>
-                  <Link to={`/post/${thread.key}`}>
-                    {thread.val.url ? (
-                      <Card.Img
-                        variant="top"
-                        src={thread.val.url}
-                        alt={thread.val.title}
-                        className="thread-img"
-                      />
-                    ) : (
-                      <p>No image</p>
-                    )}
-                  </Link>
-
-                  <Card.Body>
-                    <Card.Title>{thread.val.title}</Card.Title>
-
-                    <Button
-                      variant="white"
-                      onClick={() => handleLikes(thread.key)}
-                    >
-                      ❤️ {likeCount}
-                    </Button>
-
-                    <Card.Text>{thread.val.date}</Card.Text>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </div>
-          );
-        })}
-      </Row>
-    </div>
+    <Row xs={1} md={2} className="g-4">
+      {threadsRendered.reverse()}
+    </Row>
   );
 }
