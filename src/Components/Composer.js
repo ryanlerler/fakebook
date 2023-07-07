@@ -98,7 +98,7 @@ export default function Composer({ displayName, loggedInUser }) {
 
     set(postRef, {
       date: new Date().toLocaleString(),
-      // displayName: displayName,
+      displayName: displayName,
       title: title,
       description: description,
       url: url,

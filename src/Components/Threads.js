@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import { ref as databaseRef, onChildAdded, update } from "firebase/database";
 import { database } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
-import { Button, Card, Col, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import NoImage from "../assets/noimage.jpg";
+import ScrollToTop from "react-scroll-to-top";
 
 export default function Threads({ loggedInUser }) {
   const [threads, setThreads] = useState([]);
   const [likes, setLikes] = useState({});
+  const [userInput, setUserInput] = useState("");
+  const [isFiltered, setIsFiltered] = useState(false);
 
   useEffect(() => {
     const threadsRef = databaseRef(database, THREADS_DB_KEY);
@@ -69,53 +72,132 @@ export default function Threads({ loggedInUser }) {
     });
   };
 
-  const threadsRendered = threads.map((thread) => {
-    const likeCount = Object.values(likes[thread.key]).filter(Boolean).length;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsFiltered(true);
+  };
 
-    return (
-      <div key={thread.key}>
-        <Col>
-          <Card>
-            <Link to={`/post/${thread.key}`}>
-              {thread.val.url && thread.val.fileType === "image" ? (
-                <Card.Img
-                  variant="top"
-                  src={thread.val.url}
-                  alt={thread.val.title}
-                  className="thread-img"
-                />
-              ) : thread.val.url && thread.val.fileType === "video" ? (
-                <video className="threads-video">
-                  <source src={thread.val.url} />
-                </video>
-              ) : (
-                <Card.Img
-                  variant="top"
-                  src={NoImage}
-                  alt={thread.val.title}
-                  className="thread-img"
-                />
-              )}
-            </Link>
+  const threadsRendered = isFiltered
+    ? threads
+        .filter((thread) => thread.val.displayName.includes(userInput))
+        .map((filteredThread) => {
+          const likeCount = Object.values(likes[filteredThread.key]).filter(
+            Boolean
+          ).length;
 
-            <Card.Body>
-              <Card.Title>{thread.val.title}</Card.Title>
+          return (
+            <div key={filteredThread.key}>
+              <ScrollToTop color="blue" width="15" height="15" />
 
-              <Button variant="white" onClick={() => handleLikes(thread.key)}>
-                ❤️ {likeCount}
-              </Button>
+              <Col>
+                <Card>
+                  <Link to={`/post/${filteredThread.key}`}>
+                    {filteredThread.val.url && filteredThread.val.fileType === "image" ? (
+                      <Card.Img
+                        variant="top"
+                        src={filteredThread.val.url}
+                        alt={filteredThread.val.title}
+                        className="thread-img"
+                      />
+                    ) : filteredThread.val.url && filteredThread.val.fileType === "video" ? (
+                      <video className="threads-video">
+                        <source src={filteredThread.val.url} />
+                      </video>
+                    ) : (
+                      <Card.Img
+                        variant="top"
+                        src={NoImage}
+                        alt={filteredThread.val.title}
+                        className="thread-img"
+                      />
+                    )}
+                  </Link>
 
-              <Card.Text>{thread.val.date}</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-      </div>
-    );
-  });
+                  <Card.Body>
+                    <Card.Title>{filteredThread.val.title}</Card.Title>
+
+                    <Button
+                      variant="white"
+                      onClick={() => handleLikes(filteredThread.key)}
+                    >
+                      ❤️ {likeCount}
+                    </Button>
+
+                    <Card.Text>{filteredThread.val.displayName}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </div>
+          );
+        })
+    : threads.map((thread) => {
+        const likeCount = Object.values(likes[thread.key]).filter(
+          Boolean
+        ).length;
+
+        return (
+          <div key={thread.key}>
+            <ScrollToTop color="blue" width="15" height="15" />
+
+            <Col>
+              <Card>
+                <Link to={`/post/${thread.key}`}>
+                  {thread.val.url && thread.val.fileType === "image" ? (
+                    <Card.Img
+                      variant="top"
+                      src={thread.val.url}
+                      alt={thread.val.title}
+                      className="thread-img"
+                    />
+                  ) : thread.val.url && thread.val.fileType === "video" ? (
+                    <video className="threads-video">
+                      <source src={thread.val.url} />
+                    </video>
+                  ) : (
+                    <Card.Img
+                      variant="top"
+                      src={NoImage}
+                      alt={thread.val.title}
+                      className="thread-img"
+                    />
+                  )}
+                </Link>
+
+                <Card.Body>
+                  <Card.Title>{thread.val.title}</Card.Title>
+
+                  <Button
+                    variant="white"
+                    onClick={() => handleLikes(thread.key)}
+                  >
+                    ❤️ {likeCount}
+                  </Button>
+
+                  <Card.Text>{thread.val.displayName}</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          </div>
+        );
+      });
 
   return (
-    <Row xs={1} md={2} className="g-4">
-      {threadsRendered.reverse()}
-    </Row>
+    <div>
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Control
+            type="text"
+            placeholder="Search for a user"
+            value={userInput}
+            onChange={({ target }) => setUserInput(target.value)}
+            required
+          />
+        </Form.Group>
+      </Form>
+
+      <Row xs={1} md={2} className="g-4">
+        {threadsRendered.reverse()}
+      </Row>
+    </div>
   );
 }

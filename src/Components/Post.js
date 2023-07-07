@@ -7,6 +7,10 @@ import { Button, Card, Form } from "react-bootstrap";
 import axios from "axios";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import NoImage from "../assets/noimage.jpg";
+import ScrollToTop from "react-scroll-to-top";
+import Filter from "bad-words";
+
+const filter = new Filter();
 
 export default function Post({ loggedInUser }) {
   const { id } = useParams();
@@ -45,11 +49,13 @@ export default function Post({ loggedInUser }) {
         .then((data) => {
           const location = data.data.results[0].formatted_address;
           const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+          const cleanedComment = filter.isProfane(commentInput)
+            ? filter.clean(commentInput)
+            : commentInput;
 
           const newComment = {
-            // TODO: change to displayName
-            displayName: loggedInUser.email,
-            comment: commentInput,
+            displayName: loggedInUser.displayName,
+            comment: cleanedComment,
             date: new Date().toLocaleString(),
             location: location,
           };
@@ -92,6 +98,8 @@ export default function Post({ loggedInUser }) {
 
   return (
     <div>
+      <ScrollToTop color="blue" width="15" height="15" />
+
       {post.key && (
         <Card>
           {post.val.url && post.val.fileType === "image" ? (
@@ -118,7 +126,8 @@ export default function Post({ loggedInUser }) {
             <Card.Title>{post.val.title}</Card.Title>
             <Card.Text>{post.val.description}</Card.Text>
             <Card.Text>
-              {post.val.date} - {post.val.location}
+              <strong>{post.val.displayName} </strong>- {post.val.date} -{" "}
+              {post.val.location}
             </Card.Text>
             <hr />
 

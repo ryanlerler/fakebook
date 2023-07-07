@@ -10,25 +10,29 @@ import Composer from "./Components/Composer";
 import Post from "./Components/Post";
 import LoginForm from "./Components/LoginForm";
 import SignUpForm from "./Components/SignUpForm";
+import { useNavigate } from "react-router-dom";
 
 export const UserContext = React.createContext();
 
-function RequireAuth({ children, redirectTo, loggedInUser }) {
-  const isAuthenticated = loggedInUser.uid && loggedInUser.accessToken;
-  return isAuthenticated ? children : <Navigate to={redirectTo} />;
-}
-
 function App() {
   const [loggedInUser, setLoggedInUser] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     onAuthStateChanged(auth, (loggedInUser) => {
       console.log(loggedInUser);
       if (loggedInUser) {
         setLoggedInUser(loggedInUser);
+        navigate("/threads");
       }
     });
-  }, [loggedInUser]);
+  }, []);
+
+  const RequireAuth = ({ children, redirectTo, loggedInUser }) => {
+    console.log("loggedInUser in RequireAuth", loggedInUser);
+    const isAuthenticated = loggedInUser.uid && loggedInUser.accessToken;
+    return isAuthenticated ? children : <Navigate to={redirectTo} />;
+  };
 
   return (
     <div className="App">
@@ -41,8 +45,7 @@ function App() {
                 <Navbar.Toggle />
                 <Navbar.Collapse className="justify-content-end">
                   <Navbar.Text>
-                    {/**  TODO: change to displayName */}
-                    <a href="#login">{loggedInUser.email}</a>
+                    <a href="#login">{loggedInUser.displayName}</a>
                   </Navbar.Text>
                 </Navbar.Collapse>
               </Container>
@@ -54,6 +57,7 @@ function App() {
               onClick={() =>
                 signOut(auth).then(() => {
                   setLoggedInUser({});
+                  navigate("/login");
                 })
               }
               className="logout-button"
@@ -67,7 +71,7 @@ function App() {
               path="/"
               element={
                 <>
-                  <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
+                  <RequireAuth redirectTo="/login" loggedInUser={loggedInUser}>
                     <Threads loggedInUser={loggedInUser.uid} />
                   </RequireAuth>
                 </>
@@ -82,9 +86,9 @@ function App() {
               path="/threads"
               element={
                 <>
-                  {/* <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}> */}
+                  <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
                     <Threads loggedInUser={loggedInUser.uid} />
-                  {/* </RequireAuth> */}
+                  </RequireAuth>
                   <Button variant="danger" className="plus-button">
                     <Link to="/composer">+</Link>
                   </Button>
@@ -99,9 +103,9 @@ function App() {
                   <Link to="/threads" className="home">
                     Home
                   </Link>
-                  {/* <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}> */}
-                    <Composer />
-                  {/* </RequireAuth> */}
+                  <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
+                    <Composer displayName={loggedInUser.displayName} />
+                  </RequireAuth>
                 </>
               }
             />
@@ -110,9 +114,9 @@ function App() {
               path="/post/:id"
               element={
                 <>
-                  {/* <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}> */}
+                  <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
                     <Post loggedInUser={loggedInUser} />
-                  {/* </RequireAuth> */}
+                  </RequireAuth>
                 </>
               }
             />
