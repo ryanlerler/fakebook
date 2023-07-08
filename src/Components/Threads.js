@@ -4,7 +4,7 @@ import { database } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import NoImage from "../assets/noimage.jpg";
+import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
 
 export default function Threads({ loggedInUser }) {
@@ -91,15 +91,17 @@ export default function Threads({ loggedInUser }) {
 
               <Col>
                 <Card>
-                  <Link to={`/post/${filteredThread.key}`}>
-                    {filteredThread.val.url && filteredThread.val.fileType === "image" ? (
+                  <Link to={`/threads/${filteredThread.key}`}>
+                    {filteredThread.val.url &&
+                    filteredThread.val.fileType === "image" ? (
                       <Card.Img
                         variant="top"
                         src={filteredThread.val.url}
                         alt={filteredThread.val.title}
                         className="thread-img"
                       />
-                    ) : filteredThread.val.url && filteredThread.val.fileType === "video" ? (
+                    ) : filteredThread.val.url &&
+                      filteredThread.val.fileType === "video" ? (
                       <video className="threads-video">
                         <source src={filteredThread.val.url} />
                       </video>
@@ -141,7 +143,7 @@ export default function Threads({ loggedInUser }) {
 
             <Col>
               <Card>
-                <Link to={`/post/${thread.key}`}>
+                <Link to={`/threads/${thread.key}`}>
                   {thread.val.url && thread.val.fileType === "image" ? (
                     <Card.Img
                       variant="top"

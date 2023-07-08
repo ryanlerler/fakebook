@@ -54,12 +54,11 @@ function App() {
 
           {loggedInUser.uid && loggedInUser.accessToken && (
             <Button
-              onClick={() =>
-                signOut(auth).then(() => {
-                  setLoggedInUser({});
-                  navigate("/login");
-                })
-              }
+              onClick={async () => {
+                await signOut(auth);
+                setLoggedInUser({});
+                navigate("/login");
+              }}
               className="logout-button"
             >
               Log Out
@@ -111,7 +110,7 @@ function App() {
             />
 
             <Route
-              path="/post/:id"
+              path="/threads/:id"
               element={
                 <>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>

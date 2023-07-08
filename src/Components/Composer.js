@@ -22,8 +22,10 @@ export default function Composer({ displayName, loggedInUser }) {
 
   const determineFileType = (file) => {
     const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
-    const videoExtensions = ["mp4", "avi", "mov", "mkv"];
+    const videoExtensions = ["mp4", "mov", "mkv"];
+    // Split the file name by dot to an array containing the file base name & the extension -> get the extension at the back by pop() -> convert the extension to lowercase to check against with the array of file extensions defined above in lowercase
     const extension = file.name.split(".").pop().toLowerCase();
+    console.log("extension", extension);
 
     if (imageExtensions.includes(extension)) {
       return "image";
@@ -40,33 +42,21 @@ export default function Composer({ displayName, loggedInUser }) {
       for (let i = 0; i < arr.length; i++) {
         header += arr[i].toString(16);
       }
-
-      if (header.startsWith("89504e47")) {
+      if (header.startsWith("ffd8")) {
+        return "image"; // JPEG file signature
+      } else if (header.startsWith("89504e47")) {
         return "image"; // PNG file signature
       } else if (header.startsWith("47494638")) {
         return "image"; // GIF file signature
-      } else if (header.startsWith("ffd8")) {
-        return "image"; // JPEG file signature
       } else if (header.startsWith("52494646") && header.endsWith("57454250")) {
-        return "video"; // WebP file signature
-      } else if (
-        header.startsWith("00000018") ||
-        header.startsWith("00000020") ||
-        header.startsWith("0000001c") ||
-        header.startsWith("00000024") ||
-        header.startsWith("00000028")
-      ) {
+        return "image"; // WebP file signature
+      } else if (header.startsWith("66747970")) {
         return "video"; // MP4 file signature
-      } else if (header.startsWith("3026b2758e66cf11a6d900aa0062ce6c")) {
-        return "video"; // AVI file signature
-      } else if (
-        header.startsWith("00000014") ||
-        header.startsWith("00000018") ||
-        header.startsWith("0000001c")
-      ) {
+      } else if (header.startsWith("00000018") && header.includes("6d6f6f76")) {
         return "video"; // QuickTime (MOV) file signature
+      } else if (header.startsWith("1a45dfa3")) {
+        return "video"; // MKV file signature
       }
-
       return "unknown";
     };
     reader.readAsArrayBuffer(file.slice(0, 4));

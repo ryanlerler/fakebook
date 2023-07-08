@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Form } from "react-bootstrap";
 import axios from "axios";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
-import NoImage from "../assets/noimage.jpg";
+import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
 import Filter from "bad-words";
 
@@ -161,9 +161,6 @@ export default function Post({ loggedInUser }) {
                     <EmojiPicker
                       onEmojiClick={insertEmoji}
                       emojiStyle={EmojiStyle.FACEBOOK}
-                      disableSearchBar
-                      disableSkinTonePicker
-                      native
                     />
                   )}
 
