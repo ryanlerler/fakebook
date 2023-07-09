@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { ref as databaseRef, onChildAdded, update } from "firebase/database";
-import { database } from "../firebase";
+import {
+  ref as databaseRef,
+  onChildAdded,
+  update,
+  onChildRemoved,
+  remove,
+} from "firebase/database";
+import { database, storage } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
+import { ref as storageRef, deleteObject } from "firebase/storage";
 
-export default function Threads({ loggedInUser }) {
+export default function Threads({ loggedInUser, email }) {
   const [threads, setThreads] = useState([]);
   const [likes, setLikes] = useState({});
   const [userInput, setUserInput] = useState("");
@@ -27,6 +34,19 @@ export default function Threads({ loggedInUser }) {
       }));
     });
   }, []);
+
+  useEffect(() => {
+    const threadsRef = databaseRef(database, THREADS_DB_KEY);
+    // Delete the deleted post & file from state so it is no longer rendered
+    onChildRemoved(threadsRef, (removedOldData) => {
+      console.log("data onChildRemoved", removedOldData);
+      const threadsCopy = [...threads];
+      const newThreads = threadsCopy.filter(
+        (thread) => thread.key !== removedOldData.key
+      );
+      setThreads(newThreads);
+    });
+  }, [threads]);
 
   const handleLikes = (currentThreadKey) => {
     // First check if the current thread is already liked by the current logged in user
@@ -168,14 +188,47 @@ export default function Threads({ loggedInUser }) {
                 <Card.Body>
                   <Card.Title>{thread.val.title}</Card.Title>
 
-                  <Button
-                    variant="white"
-                    onClick={() => handleLikes(thread.key)}
-                  >
-                    ❤️ {likeCount}
-                  </Button>
+                  <Row>
+                    <Col>
+                      <Button
+                        variant="white"
+                        onClick={() => handleLikes(thread.key)}
+                      >
+                        ❤️ {likeCount}
+                      </Button>
+                    </Col>
 
-                  <Card.Text>{thread.val.displayName}</Card.Text>
+                    <Col>
+                      <Card.Text>{thread.val.displayName}</Card.Text>
+                    </Col>
+                  </Row>
+
+                  <Button
+                    variant="dark"
+                    onClick={() => {
+                      // Delete file from storage
+                      const fileDeletionRef = storageRef(
+                        storage,
+                        thread.val.fileRef
+                      );
+                      thread.val.fileRef &&
+                        deleteObject(fileDeletionRef).then(() => {
+                          console.log("file deleted");
+                        });
+
+                      // Delete an entire post from database
+                      const postDeletionRef = databaseRef(
+                        database,
+                        `${THREADS_DB_KEY}/${thread.key}`
+                      );
+                      remove(postDeletionRef).then(() => {
+                        console.log("entire post deleted");
+                      });
+                    }}
+                    hidden={email !== thread.val.email}
+                  >
+                    Delete
+                  </Button>
                 </Card.Body>
               </Card>
             </Col>

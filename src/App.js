@@ -86,7 +86,10 @@ function App() {
               element={
                 <>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
-                    <Threads loggedInUser={loggedInUser.uid} />
+                    <Threads
+                      loggedInUser={loggedInUser.uid}
+                      email={loggedInUser.email}
+                    />
                   </RequireAuth>
                   <Button variant="danger" className="plus-button">
                     <Link to="/composer">+</Link>
@@ -100,12 +103,13 @@ function App() {
               element={
                 <>
                   <Link to="/threads" className="home">
-                    Home
+                    Fakebook
                   </Link>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
                     <Composer
                       displayName={loggedInUser.displayName}
                       loggedInUser={loggedInUser.uid}
+                      email={loggedInUser.email}
                     />
                   </RequireAuth>
                 </>
@@ -117,6 +121,9 @@ function App() {
               element={
                 <>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
+                    <Link to="/threads" className="home">
+                      Fakebook
+                    </Link>
                     <Post
                       displayName={loggedInUser.displayName}
                       loggedInUser={loggedInUser.uid}

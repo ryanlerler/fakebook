@@ -14,6 +14,7 @@ import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
 import Filter from "bad-words";
+import { formatDistance, formatRelative, subDays } from "date-fns";
 
 const filter = new Filter();
 
@@ -23,7 +24,6 @@ export default function Post({ displayName, loggedInUser }) {
   const [post, setPost] = useState({});
   const [commentInput, setCommentInput] = useState("");
   const [comments, setComments] = useState([]);
-  const [selectedEmoji, setSelectedEmoji] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef(null);
   const [likes, setLikes] = useState({});
@@ -100,7 +100,7 @@ export default function Post({ displayName, loggedInUser }) {
             const newComment = {
               displayName: displayName,
               comment: cleanedComment,
-              date: new Date().toLocaleString(),
+              timeStamp: Date.now(),
               location: location,
             };
 
@@ -124,7 +124,7 @@ export default function Post({ displayName, loggedInUser }) {
         const newComment = {
           displayName: displayName,
           comment: cleanedComment,
-          date: new Date().toLocaleString(),
+          timeStamp: Date.now(),
           location: "Earth",
         };
 
@@ -141,7 +141,6 @@ export default function Post({ displayName, loggedInUser }) {
   };
 
   const insertEmoji = (emojiData) => {
-    setSelectedEmoji(emojiData.unified);
     const commentInputRef = textareaRef.current;
 
     if (commentInputRef) {
@@ -170,6 +169,10 @@ export default function Post({ displayName, loggedInUser }) {
 
       {post.key && (
         <Card>
+          <Card.Text>
+            <strong>{post.val.displayName} </strong>
+          </Card.Text>
+
           {post.val.url && post.val.fileType === "image" ? (
             <Card.Img
               variant="top"
@@ -194,11 +197,11 @@ export default function Post({ displayName, loggedInUser }) {
             <Card.Title>{post.val.title}</Card.Title>
             <Card.Text>{post.val.description}</Card.Text>
             <Card.Text>
-              <strong>{post.val.displayName} </strong>- {post.val.date} -{" "}
+              {formatRelative(subDays(new Date(), 0), new Date())} -{" "}
               {post.val.location}
             </Card.Text>
             <Button variant="white" onClick={() => handleLikes(post.key)}>
-              ❤️{post.val.likeCount}
+              ❤️{post.val.likeCount || 0}
             </Button>
             <hr />
 
@@ -206,17 +209,32 @@ export default function Post({ displayName, loggedInUser }) {
               <Form.Group className="mb-3">
                 <Form.Label>Comments</Form.Label>
                 {/**Use comments state rather than post.val.comments so the comments will render immediately upon submission as Firebase will not return the data immediately due to its async nature */}
-                {comments &&
-                  comments.length > 0 &&
+                {comments && comments.length > 0 ? (
                   comments.map((comment) => (
-                    <div key={comment.date}>
-                      <Card.Text> {comment.comment}</Card.Text>
+                    <div key={comment.timeStamp}>
                       <Card.Text>
-                        <strong>{comment.displayName} </strong>- {comment.date}-{" "}
-                        {comment.location}
+                        <strong>{comment.displayName} </strong>
                       </Card.Text>
+
+                      <Card.Text>{comment.comment}</Card.Text>
+
+                      <Card.Text>
+                        {formatDistance(
+                          new Date(comment.timeStamp),
+                          new Date(),
+                          {
+                            addSuffix: true,
+                          }
+                        )}
+                        - {comment.location}
+                      </Card.Text>
+
+                      <hr />
                     </div>
-                  ))}
+                  ))
+                ) : (
+                  <h2>Be the first to comment</h2>
+                )}
 
                 <div className="position-relative">
                   <Form.Control

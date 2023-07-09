@@ -12,8 +12,8 @@ import { THREADS_DB_KEY, STORAGE_KEY, GOOGLE_MAPS_API_KEY } from "../constants";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function Composer({ displayName, loggedInUser }) {
-  const navigate = useNavigate("");
+export default function Composer({ displayName, loggedInUser, email }) {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [fileInputFile, setFileInputFile] = useState(null);
@@ -33,15 +33,24 @@ export default function Composer({ displayName, loggedInUser }) {
       return "video";
     }
 
-    // Read the file using FileReader and check its signature
+    // Read the file using FileReader and check the file signature
     const reader = new FileReader();
 
+    // Initiate the asynchronous reading of the file data. It reads the first four bytes of the file.
+    reader.readAsArrayBuffer(file.slice(0, 4));
+
+    // When file read is complete
     reader.onloadend = () => {
+      // Reader.result is an ArrayBuffer object which contains the file data that has been read. It is converted to a Uint8Array to access individual bytes. The subarray(0, 4) method is used to extract the first four elements (bytes) from the Uint8Array.
       const arr = new Uint8Array(reader.result).subarray(0, 4);
+
+      // To store the hexadecimal representation of the bytes
       let header = "";
+      // To iterate over arr, which contains the first four bytes of the file. The toString(16) method converts each byte to its hexadecimal representation
       for (let i = 0; i < arr.length; i++) {
         header += arr[i].toString(16);
       }
+      // Identify file type by checking file signature
       if (header.startsWith("ffd8")) {
         return "image"; // JPEG file signature
       } else if (header.startsWith("89504e47")) {
@@ -59,7 +68,6 @@ export default function Composer({ displayName, loggedInUser }) {
       }
       return "unknown";
     };
-    reader.readAsArrayBuffer(file.slice(0, 4));
   };
 
   const handleFileChange = ({ target }) => {
@@ -78,7 +86,7 @@ export default function Composer({ displayName, loggedInUser }) {
     setFileInputValue("");
   };
 
-  const writeData = (url, location) => {
+  const writeData = (url, location, fileRef) => {
     const threadsRef = databaseRef(database, THREADS_DB_KEY);
     const postRef = push(threadsRef);
     // Initialize likes object with initial value of false while the key dynamically represents the current logged in user
@@ -87,14 +95,16 @@ export default function Composer({ displayName, loggedInUser }) {
     };
 
     set(postRef, {
-      date: new Date().toLocaleString(),
+      timeStamp: new Date().toLocaleDateString(),
       displayName: displayName,
       title: title,
       description: description,
       url: url,
       likes: likes,
       location: location,
-      fileType: fileType? fileType: 'Unsupported format',
+      fileType: fileType ? fileType : "Unsupported format",
+      fileRef: String(fileRef),
+      email: email,
     });
 
     clearInputFields();
@@ -116,40 +126,41 @@ export default function Composer({ displayName, loggedInUser }) {
             )
             .then((data) => {
               const location = data.data.results[0].formatted_address;
+
               if (fileInputFile) {
                 const uniqueFileName = fileInputFile.name + uuidv4();
                 const fileRef = storageRef(
                   storage,
                   `${STORAGE_KEY}${uniqueFileName}`
                 );
-
                 uploadBytes(fileRef, fileInputFile).then(() => {
                   getDownloadURL(fileRef).then((url) =>
-                    writeData(url, location)
+                    writeData(url, location, fileRef)
                   );
                 });
               } else {
-                writeData(null, location);
+                writeData(null, location, "");
               }
             })
             .then(() => navigate("/threads"));
         },
         // If user blocks location access
         () => {
+          const uniqueFileName = fileInputFile.name + uuidv4();
+          const fileRef = storageRef(
+            storage,
+            `${STORAGE_KEY}${uniqueFileName}`
+          );
           if (fileInputFile && fileType) {
-            const uniqueFileName = fileInputFile.name + uuidv4();
-            const fileRef = storageRef(
-              storage,
-              `${STORAGE_KEY}${uniqueFileName}`
-            );
-
             uploadBytes(fileRef, fileInputFile)
               .then(() => {
-                getDownloadURL(fileRef).then((url) => writeData(url, "Earth"));
+                getDownloadURL(fileRef).then((url) =>
+                  writeData(url, "Earth", fileRef)
+                );
               })
               .then(() => navigate("/threads"));
           } else {
-            writeData(null, "Earth");
+            writeData(null, "Earth", "");
             navigate("/threads");
           }
         }
@@ -185,12 +196,11 @@ export default function Composer({ displayName, loggedInUser }) {
         <Form.Group className="mb-3">
           <Form.Label>
             Optional - <br />
-            Accepts images (jpg, jpeg, png, gif, webp) & <br />
-            videos (mp4, mov, mkv)
+            Accepts ONE image (jpg, jpeg, png, gif, webp) OR <br />
+            ONE video (mp4, mov, mkv)
           </Form.Label>
           <Form.Control
             type="file"
-            multiple
             value={fileInputValue}
             onChange={handleFileChange}
           />
@@ -199,6 +209,10 @@ export default function Composer({ displayName, loggedInUser }) {
         <Button variant="danger" type="submit">
           POST
         </Button>
+        <br />
+        <br />
+
+        <Button onClick={() => navigate(-1)}>Back</Button>
       </Form>
     </div>
   );
