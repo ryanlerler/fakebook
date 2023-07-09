@@ -95,7 +95,7 @@ export default function Composer({ displayName, loggedInUser, email }) {
     };
 
     set(postRef, {
-      timeStamp: new Date().toLocaleDateString(),
+      timeStamp: Date.now(),
       displayName: displayName,
       title: title,
       description: description,

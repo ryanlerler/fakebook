@@ -197,7 +197,7 @@ export default function Post({ displayName, loggedInUser }) {
             <Card.Title>{post.val.title}</Card.Title>
             <Card.Text>{post.val.description}</Card.Text>
             <Card.Text>
-              {formatRelative(subDays(new Date(), 0), new Date())} -{" "}
+              {formatRelative(subDays(post.val.timeStamp, 0), new Date())} -{" "}
               {post.val.location}
             </Card.Text>
             <Button variant="white" onClick={() => handleLikes(post.key)}>
