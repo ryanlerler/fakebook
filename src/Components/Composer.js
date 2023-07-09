@@ -94,7 +94,7 @@ export default function Composer({ displayName, loggedInUser }) {
       url: url,
       likes: likes,
       location: location,
-      fileType: fileType,
+      fileType: fileType? fileType: 'Unsupported format',
     });
 
     clearInputFields();
@@ -104,32 +104,57 @@ export default function Composer({ displayName, loggedInUser }) {
     e.preventDefault();
     console.log(e);
 
-    navigator.geolocation.getCurrentPosition((position) => {
-      const { latitude, longitude } = position.coords;
-      console.log(latitude, longitude);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log(latitude, longitude);
 
-      axios
-        .get(
-          ` https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
-        )
-        .then((data) => {
-          const location = data.data.results[0].formatted_address;
-          if (fileInputFile) {
+          axios
+            .get(
+              ` https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+            )
+            .then((data) => {
+              const location = data.data.results[0].formatted_address;
+              if (fileInputFile) {
+                const uniqueFileName = fileInputFile.name + uuidv4();
+                const fileRef = storageRef(
+                  storage,
+                  `${STORAGE_KEY}${uniqueFileName}`
+                );
+
+                uploadBytes(fileRef, fileInputFile).then(() => {
+                  getDownloadURL(fileRef).then((url) =>
+                    writeData(url, location)
+                  );
+                });
+              } else {
+                writeData(null, location);
+              }
+            })
+            .then(() => navigate("/threads"));
+        },
+        // If user blocks location access
+        () => {
+          if (fileInputFile && fileType) {
             const uniqueFileName = fileInputFile.name + uuidv4();
             const fileRef = storageRef(
               storage,
               `${STORAGE_KEY}${uniqueFileName}`
             );
 
-            uploadBytes(fileRef, fileInputFile).then(() => {
-              getDownloadURL(fileRef).then((url) => writeData(url, location));
-            });
+            uploadBytes(fileRef, fileInputFile)
+              .then(() => {
+                getDownloadURL(fileRef).then((url) => writeData(url, "Earth"));
+              })
+              .then(() => navigate("/threads"));
           } else {
-            writeData(null, location);
+            writeData(null, "Earth");
+            navigate("/threads");
           }
-        })
-        .then(() => navigate("/threads"));
-    });
+        }
+      );
+    }
   };
 
   return (
@@ -158,7 +183,11 @@ export default function Composer({ displayName, loggedInUser }) {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Optional</Form.Label>
+          <Form.Label>
+            Optional - <br />
+            Accepts images (jpg, jpeg, png, gif, webp) & <br />
+            videos (mp4, mov, mkv)
+          </Form.Label>
           <Form.Control
             type="file"
             multiple

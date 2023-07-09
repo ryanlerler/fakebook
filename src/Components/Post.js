@@ -39,37 +39,62 @@ export default function Post({ loggedInUser }) {
   const writeData = (e) => {
     e.preventDefault();
 
-    navigator.geolocation.getCurrentPosition((position) => {
-      const { latitude, longitude } = position.coords;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
 
-      axios
-        .get(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
-        )
-        .then((data) => {
-          const location = data.data.results[0].formatted_address;
-          const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
-          const cleanedComment = filter.isProfane(commentInput)
-            ? filter.clean(commentInput)
-            : commentInput;
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+          )
+          .then((data) => {
+            const location = data.data.results[0].formatted_address;
+            const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+            const cleanedComment = filter.isProfane(commentInput)
+              ? filter.clean(commentInput)
+              : commentInput;
 
-          const newComment = {
-            displayName: loggedInUser.displayName,
-            comment: cleanedComment,
-            date: new Date().toLocaleString(),
-            location: location,
-          };
+            const newComment = {
+              displayName: loggedInUser.displayName,
+              comment: cleanedComment,
+              date: new Date().toLocaleString(),
+              location: location,
+            };
 
-          const allComments = [...comments, newComment];
+            const allComments = [...comments, newComment];
 
-          update(threadRef, {
-            comments: allComments,
+            update(threadRef, {
+              comments: allComments,
+            });
+
+            setCommentInput("");
+            setComments(allComments);
           });
+      },
+      // If user blocks location access
+      () => {
+        const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+        const cleanedComment = filter.isProfane(commentInput)
+          ? filter.clean(commentInput)
+          : commentInput;
 
-          setCommentInput("");
-          setComments(allComments);
+        const newComment = {
+          displayName: loggedInUser.displayName,
+          comment: cleanedComment,
+          date: new Date().toLocaleString(),
+          location: "Earth",
+        };
+
+        const allComments = [...comments, newComment];
+
+        update(threadRef, {
+          comments: allComments,
         });
-    });
+
+        setCommentInput("");
+        setComments(allComments);
+      }
+    );
   };
 
   const insertEmoji = (emojiData) => {
