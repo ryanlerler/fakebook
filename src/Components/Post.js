@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { database } from "../firebase";
-import { ref as databaseRef, get, update } from "firebase/database";
+import {
+  ref as databaseRef,
+  get,
+  onChildAdded,
+  update,
+} from "firebase/database";
 import { GOOGLE_MAPS_API_KEY, THREADS_DB_KEY } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Card, Form } from "react-bootstrap";
@@ -12,7 +17,7 @@ import Filter from "bad-words";
 
 const filter = new Filter();
 
-export default function Post({ loggedInUser }) {
+export default function Post({ displayName, loggedInUser }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState({});
@@ -21,20 +26,58 @@ export default function Post({ loggedInUser }) {
   const [selectedEmoji, setSelectedEmoji] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef(null);
+  const [likes, setLikes] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       const postRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
       const data = await get(postRef);
       console.log(data);
-      setPost({ key: data.key, val: data.val() });
+      setPost({
+        key: data.key,
+        val: data.val(),
+      });
       // Grab the comments from DB and synchronize them with comments state
       // When there are no comments yet, data.val().comments will be undefined or null. Set it to an empty array explicitly to avoid errors when spreading comments later
       setComments(data.val().comments || []);
     };
 
     fetchData();
-  }, [id]);
+  }, [id, likes]);
+
+  useEffect(() => {
+    const threadsRef = databaseRef(database, THREADS_DB_KEY);
+
+    onChildAdded(threadsRef, (data) => {
+      setLikes((l) => ({
+        ...l,
+        [data.key]: data.val().likes,
+      }));
+    });
+  }, []);
+
+  const handleLikes = (currentThreadKey) => {
+    const isLiked = likes[currentThreadKey]?.[loggedInUser] || false;
+    const newLikes = {
+      ...likes,
+      [currentThreadKey]: {
+        ...likes[currentThreadKey],
+        [loggedInUser]: !isLiked,
+      },
+    };
+    setLikes(newLikes);
+    const likeCount = Object.values(newLikes[currentThreadKey]).filter(
+      Boolean
+    ).length;
+    const threadRef = databaseRef(
+      database,
+      `${THREADS_DB_KEY}/${currentThreadKey}`
+    );
+    update(threadRef, {
+      likes: newLikes[currentThreadKey],
+      likeCount: likeCount,
+    });
+  };
 
   const writeData = (e) => {
     e.preventDefault();
@@ -55,7 +98,7 @@ export default function Post({ loggedInUser }) {
               : commentInput;
 
             const newComment = {
-              displayName: loggedInUser.displayName,
+              displayName: displayName,
               comment: cleanedComment,
               date: new Date().toLocaleString(),
               location: location,
@@ -79,7 +122,7 @@ export default function Post({ loggedInUser }) {
           : commentInput;
 
         const newComment = {
-          displayName: loggedInUser.displayName,
+          displayName: displayName,
           comment: cleanedComment,
           date: new Date().toLocaleString(),
           location: "Earth",
@@ -154,6 +197,9 @@ export default function Post({ loggedInUser }) {
               <strong>{post.val.displayName} </strong>- {post.val.date} -{" "}
               {post.val.location}
             </Card.Text>
+            <Button variant="white" onClick={() => handleLikes(post.key)}>
+              ❤️{post.val.likeCount}
+            </Button>
             <hr />
 
             <Form onSubmit={writeData}>

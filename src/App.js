@@ -103,7 +103,10 @@ function App() {
                     Home
                   </Link>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
-                    <Composer displayName={loggedInUser.displayName} />
+                    <Composer
+                      displayName={loggedInUser.displayName}
+                      loggedInUser={loggedInUser.uid}
+                    />
                   </RequireAuth>
                 </>
               }
@@ -114,7 +117,10 @@ function App() {
               element={
                 <>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
-                    <Post loggedInUser={loggedInUser} />
+                    <Post
+                      displayName={loggedInUser.displayName}
+                      loggedInUser={loggedInUser.uid}
+                    />
                   </RequireAuth>
                 </>
               }
