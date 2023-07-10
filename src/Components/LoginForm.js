@@ -44,6 +44,13 @@ function LoginForm() {
 
   // sign in and catching the error from firebase to reflect the message
   const signIn = () => {
+    if (
+      (emailmessage === "Email is not valid" ||
+        emailmessage === "Please Enter Email") &&
+      password === ""
+    ) {
+      return;
+    }
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
@@ -69,6 +76,8 @@ function LoginForm() {
           setMessage("Incorrect Password. Try again!");
         } else if (errorCode === "auth/weak-password") {
           setMessage("Please key in a password of at least 6 characters.");
+        } else if (errorCode === "auth/missing-password") {
+          setMessage("Please key in password!");
         } else {
           return setMessage("");
         }
