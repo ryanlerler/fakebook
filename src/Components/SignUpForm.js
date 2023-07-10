@@ -6,6 +6,7 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ProfilePic } from "./ProfilePic";
 
 function SignUpForm() {
   // Setting State
@@ -60,33 +61,49 @@ function SignUpForm() {
 
   // This to check is the password in the password and confirm password field matches.
   const checkPasswordValidation = () => {
-    if (password === passwordconfirmation) {
-      setPasswordMessage("Password matched!");
-    } else {
+    if (!passwordconfirmation) {
+      setPasswordMessage("Please enter the password confirmation");
+    } else if (password !== passwordconfirmation) {
       setPasswordMessage("Password does not match");
+    } else if (password === passwordconfirmation) {
+      setPasswordMessage("Password matched!");
     }
   };
 
   // Message prompt for new user if the email address in placed has been taken up.
+  let isSignUp = false;
   const signUp = () => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(user);
-        updateProfile(auth.currentUser, { displayName: username });
-         navigate("/profilepic");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        console.log(errorCode);
-        const errorMessage = error.message;
-        console.log(errorMessage);
-        if (errorCode === "auth/email-already-in-use") {
-          setEmailMessage("Email in use. Kindly pick another email ");
-        } else {
-          return setEmailMessage("");
-        }
-      });
+    if (
+      (passwordmessage !== "Password matched!" || isSignUp) &&
+      (emailmessage === "Email is not valid" || email === "") &&
+      username === ""
+    ) {
+      return;
+    } else if (
+      passwordmessage === "Password matched!" &&
+      !isSignUp &&
+      username !== "" &&
+      emailmessage === "Email is Valid"
+    ) {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(user);
+          updateProfile(auth.currentUser, { displayName: username });
+          navigate("/ProfilePic");
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          console.log(errorCode);
+          const errorMessage = error.message;
+          console.log(errorMessage);
+          if (errorCode === "auth/email-already-in-use") {
+            setEmailMessage("Email in use. Kindly pick another email ");
+          } else {
+            return setEmailMessage("");
+          }
+        });
+    }
   };
 
   return (
