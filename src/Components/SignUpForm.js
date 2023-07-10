@@ -74,7 +74,7 @@ function SignUpForm() {
         const user = userCredential.user;
         console.log(user);
         updateProfile(auth.currentUser, { displayName: username });
-        navigate("/threads");
+         navigate("/profilepic");
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -148,6 +148,9 @@ function SignUpForm() {
                     <p className="fs-6 text-danger">{passwordmessage}</p>
                   </Form.Group>
                 </Form.Group>
+                <p className="fs-6 text-secondary">
+                  Password should be at least 6 characters long.
+                </p>
                 <br />
                 <Button
                   onClick={() => {
