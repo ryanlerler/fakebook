@@ -24,6 +24,7 @@ function SignUpForm() {
   };
   console.log(email);
 
+  // This is to check is the email address enter conform to standard email address output.
   const checkEmailValidation = () => {
     const RGEXPemail =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -41,7 +42,7 @@ function SignUpForm() {
   const handleUserNameChange = (e) => {
     setUsername(e.target.value);
   };
-  // This to ensure that username input is not empty. 
+  // This to ensure that username input is not empty.
   const checkUsernameValidation = () => {
     if (username === "") {
       setUsernameMessage("Please Key in username");
@@ -57,7 +58,7 @@ function SignUpForm() {
     setPasswordConfirmation(e.target.value);
   };
 
-  // This to check is the password in the password and confirm password field matches. 
+  // This to check is the password in the password and confirm password field matches.
   const checkPasswordValidation = () => {
     if (password === passwordconfirmation) {
       setPasswordMessage("Password matched!");
@@ -66,14 +67,14 @@ function SignUpForm() {
     }
   };
 
-  // Message prompt for new user if the email address in placed has been taken up. 
+  // Message prompt for new user if the email address in placed has been taken up.
   const signUp = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
         console.log(user);
         updateProfile(auth.currentUser, { displayName: username });
-        navigate("/threads");
+         navigate("/profilepic");
       })
       .catch((error) => {
         const errorCode = error.code;
@@ -147,6 +148,9 @@ function SignUpForm() {
                     <p className="fs-6 text-danger">{passwordmessage}</p>
                   </Form.Group>
                 </Form.Group>
+                <p className="fs-6 text-secondary">
+                  Password should be at least 6 characters long.
+                </p>
                 <br />
                 <Button
                   onClick={() => {

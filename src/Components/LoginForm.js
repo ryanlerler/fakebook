@@ -27,7 +27,7 @@ function LoginForm() {
     setPassword(e.target.value);
   };
 
-  // This is to check is the email address enter conform to standard email address output. 
+  // This is to check is the email address enter conform to standard email address output.
   const checkEmailValidation = () => {
     const RGEXPemail =
       /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
