@@ -11,6 +11,7 @@ import Post from "./Components/Post";
 import LoginForm from "./Components/LoginForm";
 import SignUpForm from "./Components/SignUpForm";
 import { useNavigate } from "react-router-dom";
+import ProfilePic from "./Components/ProfilePic";
 
 export const UserContext = React.createContext();
 
@@ -45,6 +46,11 @@ function App() {
                 <Navbar.Toggle />
                 <Navbar.Collapse className="justify-content-end">
                   <Navbar.Text>
+                    <img
+                      src={loggedInUser.photoURL}
+                      alt="profilepic"
+                      className="avatar"
+                    />
                     <a href="#login">{loggedInUser.displayName}</a>
                   </Navbar.Text>
                 </Navbar.Collapse>
@@ -71,7 +77,7 @@ function App() {
               element={
                 <>
                   <RequireAuth redirectTo="/login" loggedInUser={loggedInUser}>
-                    <Threads loggedInUser={loggedInUser.uid} />
+                    <Threads />
                   </RequireAuth>
                 </>
               }
@@ -86,10 +92,7 @@ function App() {
               element={
                 <>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
-                    <Threads
-                      loggedInUser={loggedInUser.uid}
-                      email={loggedInUser.email}
-                    />
+                    <Threads />
                   </RequireAuth>
                   <Button variant="danger" className="plus-button">
                     <Link to="/composer">+</Link>
@@ -106,11 +109,7 @@ function App() {
                     Fakebook
                   </Link>
                   <RequireAuth redirectTo="/signup" loggedInUser={loggedInUser}>
-                    <Composer
-                      displayName={loggedInUser.displayName}
-                      loggedInUser={loggedInUser.uid}
-                      email={loggedInUser.email}
-                    />
+                    <Composer />
                   </RequireAuth>
                 </>
               }
@@ -124,14 +123,13 @@ function App() {
                     <Link to="/threads" className="home">
                       Fakebook
                     </Link>
-                    <Post
-                      displayName={loggedInUser.displayName}
-                      loggedInUser={loggedInUser.uid}
-                    />
+                    <Post />
                   </RequireAuth>
                 </>
               }
             />
+
+            <Route path="/profilepic" element={<ProfilePic />} />
           </Routes>
         </UserContext.Provider>
       </header>

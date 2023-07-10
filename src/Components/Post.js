@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { database } from "../firebase";
 import {
   ref as databaseRef,
@@ -8,17 +8,27 @@ import {
 } from "firebase/database";
 import { GOOGLE_MAPS_API_KEY, THREADS_DB_KEY } from "../constants";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card, Form } from "react-bootstrap";
+import { Button, Card, Col, Container, Form, Row } from "react-bootstrap";
 import axios from "axios";
 import EmojiPicker, { EmojiStyle } from "emoji-picker-react";
 import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
 import Filter from "bad-words";
 import { formatDistance, formatRelative, subDays } from "date-fns";
+import {
+  faEdit,
+  faTrash,
+  faCheck,
+  faTimes,
+  faArrowLeft,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { UserContext } from "../App";
 
 const filter = new Filter();
 
-export default function Post({ displayName, loggedInUser }) {
+export default function Post() {
+  const user = useContext(UserContext);
   const { id } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState({});
@@ -27,6 +37,9 @@ export default function Post({ displayName, loggedInUser }) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef(null);
   const [likes, setLikes] = useState({});
+  const [editMode, setEditMode] = useState(false);
+  const [updatedPost, setUpdatedPost] = useState({});
+  const [editingComment, setEditingComment] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,12 +70,12 @@ export default function Post({ displayName, loggedInUser }) {
   }, []);
 
   const handleLikes = (currentThreadKey) => {
-    const isLiked = likes[currentThreadKey]?.[loggedInUser] || false;
+    const isLiked = likes[currentThreadKey]?.[user.uid] || false;
     const newLikes = {
       ...likes,
       [currentThreadKey]: {
         ...likes[currentThreadKey],
-        [loggedInUser]: !isLiked,
+        [user.uid]: !isLiked,
       },
     };
     setLikes(newLikes);
@@ -82,62 +95,73 @@ export default function Post({ displayName, loggedInUser }) {
   const writeData = (e) => {
     e.preventDefault();
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+    if (commentInput === "") return;
 
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
-          )
-          .then((data) => {
-            const location = data.data.results[0].formatted_address;
-            const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
-            const cleanedComment = filter.isProfane(commentInput)
-              ? filter.clean(commentInput)
-              : commentInput;
+    if (editingComment) {
+      // Update the edited comment
+      updateComment();
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
 
-            const newComment = {
-              displayName: displayName,
-              comment: cleanedComment,
-              timeStamp: Date.now(),
-              location: location,
-            };
+          axios
+            .get(
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
+            )
+            .then((data) => {
+              const location = data.data.results[0].formatted_address;
+              const threadRef = databaseRef(
+                database,
+                `${THREADS_DB_KEY}/${id}`
+              );
+              const cleanedComment = filter.isProfane(commentInput)
+                ? filter.clean(commentInput)
+                : commentInput;
 
-            const allComments = [...comments, newComment];
+              const newComment = {
+                displayName: user.displayName,
+                comment: cleanedComment,
+                timeStamp: Date.now(),
+                location: location,
+                email: user.email,
+              };
 
-            update(threadRef, {
-              comments: allComments,
+              const allComments = [...comments, newComment];
+
+              update(threadRef, {
+                comments: allComments,
+              });
+
+              setCommentInput("");
+              setComments(allComments);
             });
+        },
+        // If user blocks location access
+        () => {
+          const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+          const cleanedComment = filter.isProfane(commentInput)
+            ? filter.clean(commentInput)
+            : commentInput;
 
-            setCommentInput("");
-            setComments(allComments);
+          const newComment = {
+            displayName: user.displayName,
+            comment: cleanedComment,
+            timeStamp: Date.now(),
+            location: "Earth",
+          };
+
+          const allComments = [...comments, newComment];
+
+          update(threadRef, {
+            comments: allComments,
           });
-      },
-      // If user blocks location access
-      () => {
-        const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
-        const cleanedComment = filter.isProfane(commentInput)
-          ? filter.clean(commentInput)
-          : commentInput;
 
-        const newComment = {
-          displayName: displayName,
-          comment: cleanedComment,
-          timeStamp: Date.now(),
-          location: "Earth",
-        };
-
-        const allComments = [...comments, newComment];
-
-        update(threadRef, {
-          comments: allComments,
-        });
-
-        setCommentInput("");
-        setComments(allComments);
-      }
-    );
+          setCommentInput("");
+          setComments(allComments);
+        }
+      );
+    }
   };
 
   const insertEmoji = (emojiData) => {
@@ -163,116 +187,290 @@ export default function Post({ displayName, loggedInUser }) {
     setShowEmojiPicker(!showEmojiPicker);
   };
 
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
+  };
+
+  const updatePost = () => {
+    const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+    const { title, description } = updatedPost;
+
+    update(threadRef, {
+      title: title || post.val.title,
+      description: description || post.val.description,
+    });
+
+    setPost((prevPost) => ({
+      ...prevPost,
+      val: {
+        ...prevPost.val,
+        title: title || prevPost.val.title,
+        description: description || prevPost.val.description,
+      },
+    }));
+
+    setEditMode(false);
+  };
+
+  const deleteComment = (comment) => {
+    const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+    const filteredComments = comments.filter(
+      (c) => c.timeStamp !== comment.timeStamp
+    );
+    // Update the comments in the database
+    update(threadRef, {
+      comments: filteredComments,
+    });
+    // Update the comments in the state
+    setComments(filteredComments);
+  };
+
+  const editComment = (comment) => {
+    setEditingComment(comment);
+    setCommentInput(comment.comment);
+  };
+
+  const cancelEditing = () => {
+    setEditingComment(null);
+    setCommentInput("");
+  };
+
+  const updateComment = () => {
+    const threadRef = databaseRef(database, `${THREADS_DB_KEY}/${id}`);
+    const updatedComments = comments.map((comment) => {
+      if (comment === editingComment) {
+        return {
+          ...comment,
+          comment: commentInput,
+        };
+      }
+      return comment;
+    });
+
+    update(threadRef, {
+      comments: updatedComments,
+    });
+
+    setEditingComment(null);
+    setCommentInput("");
+    setComments(updatedComments);
+  };
+
   return (
-    <div>
+    <Container>
       <ScrollToTop color="blue" width="15" height="15" />
 
       {post.key && (
-        <Card>
-          <Card.Text>
-            <strong>{post.val.displayName} </strong>
-          </Card.Text>
+        <>
+          <Row>
+            <Col>
+              <Card>
+                <Card.Text>
+                  <strong>{post.val.displayName} </strong>
+                </Card.Text>
 
-          {post.val.url && post.val.fileType === "image" ? (
-            <Card.Img
-              variant="top"
-              src={post.val.url}
-              alt={post.val.title}
-              className="thread-img"
-            />
-          ) : post.val.url && post.val.fileType === "video" ? (
-            <video autoPlay controls className="post-video">
-              <source src={post.val.url} />
-            </video>
-          ) : (
-            <Card.Img
-              variant="top"
-              src={NoImage}
-              alt={post.val.title}
-              className="thread-img"
-            />
-          )}
-
-          <Card.Body>
-            <Card.Title>{post.val.title}</Card.Title>
-            <Card.Text>{post.val.description}</Card.Text>
-            <Card.Text>
-              {formatRelative(subDays(post.val.timeStamp, 0), new Date())} -{" "}
-              {post.val.location}
-            </Card.Text>
-            <Button variant="white" onClick={() => handleLikes(post.key)}>
-              ❤️{post.val.likeCount || 0}
-            </Button>
-            <hr />
-
-            <Form onSubmit={writeData}>
-              <Form.Group className="mb-3">
-                <Form.Label>Comments</Form.Label>
-                {/**Use comments state rather than post.val.comments so the comments will render immediately upon submission as Firebase will not return the data immediately due to its async nature */}
-                {comments && comments.length > 0 ? (
-                  comments.map((comment) => (
-                    <div key={comment.timeStamp}>
-                      <Card.Text>
-                        <strong>{comment.displayName} </strong>
-                      </Card.Text>
-
-                      <Card.Text>{comment.comment}</Card.Text>
-
-                      <Card.Text>
-                        {formatDistance(
-                          new Date(comment.timeStamp),
-                          new Date(),
-                          {
-                            addSuffix: true,
-                          }
-                        )}
-                        - {comment.location}
-                      </Card.Text>
-
-                      <hr />
-                    </div>
-                  ))
+                {post.val.url && post.val.fileType === "image" ? (
+                  <Card.Img
+                    variant="top"
+                    src={post.val.url}
+                    alt={post.val.title}
+                    className="thread-img"
+                  />
+                ) : post.val.url && post.val.fileType === "video" ? (
+                  <video autoPlay controls className="post-video">
+                    <source src={post.val.url} />
+                  </video>
                 ) : (
-                  <h2>Be the first to comment</h2>
+                  <Card.Img
+                    variant="top"
+                    src={NoImage}
+                    alt={post.val.title}
+                    className="thread-img"
+                  />
                 )}
 
-                <div className="position-relative">
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    placeholder="Add comment"
-                    value={commentInput}
-                    onChange={({ target }) => setCommentInput(target.value)}
-                    ref={textareaRef}
-                  />
+                <Card.Body>
+                  {editMode ? (
+                    <div>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Title</Form.Label>
+                        <Form.Control
+                          type="text"
+                          value={updatedPost.title || post.val.title}
+                          onChange={(e) =>
+                            setUpdatedPost((prevPost) => ({
+                              ...prevPost,
+                              title: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </Form.Group>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Description</Form.Label>
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          value={
+                            updatedPost.description || post.val.description
+                          }
+                          onChange={(e) =>
+                            setUpdatedPost((prevPost) => ({
+                              ...prevPost,
+                              description: e.target.value,
+                            }))
+                          }
+                        />
+                      </Form.Group>
+                      <Button variant="primary" onClick={updatePost}>
+                        Update
+                      </Button>
+                      <Button variant="secondary" onClick={toggleEditMode}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div>
+                      <Card.Title>{post.val.title}</Card.Title>
+                      <Card.Text>{post.val.description}</Card.Text>
+                      <Card.Text>
+                        {formatRelative(
+                          subDays(post.val.timeStamp, 0),
+                          new Date()
+                        )}{" "}
+                        - {post.val.location}
+                      </Card.Text>
+                      <Button
+                        variant="white"
+                        onClick={() => handleLikes(post.key)}
+                      >
+                        ❤️{post.val.likeCount || 0}
+                      </Button>
 
-                  {showEmojiPicker && (
-                    <EmojiPicker
-                      onEmojiClick={insertEmoji}
-                      emojiStyle={EmojiStyle.FACEBOOK}
-                    />
+                      <br />
+                      {user.email === post.val.email && (
+                        <Button variant="primary" onClick={toggleEditMode}>
+                          <FontAwesomeIcon icon={faEdit} /> Edit
+                        </Button>
+                      )}
+                    </div>
                   )}
 
-                  <Button
-                    variant="light"
-                    className="position-absolute top-0 end-0 me-2 mt-2"
-                    onClick={toggleEmojiPicker}
-                  >
-                    😃
+                  <Button variant="danger" onClick={() => navigate(-1)}>
+                    <FontAwesomeIcon icon={faArrowLeft} /> Back
                   </Button>
-                </div>
-                <br />
+                </Card.Body>
+              </Card>
+            </Col>
 
-                <Button variant="danger" type="submit">
-                  Post Comment
-                </Button>
-              </Form.Group>
-            </Form>
+            <Col>
+              <Card>
+                <Card.Body>
+                  <Form onSubmit={writeData}>
+                    <Form.Group className="mb-3">
+                      {/**Use comments state rather than post.val.comments so the comments will render immediately upon submission as Firebase will not return the data immediately due to its async nature */}
+                      {comments && comments.length > 0 ? (
+                        comments.map((comment) => (
+                          <div key={comment.timeStamp}>
+                            <Card.Text>
+                              <strong>{comment.displayName} </strong>
+                            </Card.Text>
 
-            <Button onClick={() => navigate(-1)}>Back</Button>
-          </Card.Body>
-        </Card>
+                            <Card.Text>{comment.comment}</Card.Text>
+
+                            <Card.Text>
+                              {formatDistance(
+                                new Date(comment.timeStamp),
+                                new Date(),
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
+                              - {comment.location}
+                            </Card.Text>
+
+                            {user.email === comment.email && (
+                              <>
+                                <Button
+                                  variant="primary"
+                                  onClick={() => editComment(comment)}
+                                >
+                                  <FontAwesomeIcon icon={faEdit} /> Edit
+                                </Button>
+
+                                <Button
+                                  variant="danger"
+                                  onClick={() => deleteComment(comment)}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} /> Delete
+                                </Button>
+                              </>
+                            )}
+                            <hr />
+                          </div>
+                        ))
+                      ) : (
+                        <h2>Be the first to comment</h2>
+                      )}
+
+                      <div className="position-relative">
+                        <Form.Control
+                          as="textarea"
+                          rows={3}
+                          placeholder="Add comment"
+                          value={commentInput}
+                          onChange={({ target }) =>
+                            setCommentInput(target.value)
+                          }
+                          ref={textareaRef}
+                        />
+
+                        {showEmojiPicker && (
+                          <EmojiPicker
+                            onEmojiClick={insertEmoji}
+                            emojiStyle={EmojiStyle.FACEBOOK}
+                          />
+                        )}
+
+                        <Button
+                          variant="light"
+                          className="position-absolute top-0 end-0 me-2 mt-2"
+                          onClick={toggleEmojiPicker}
+                        >
+                          😃
+                        </Button>
+                      </div>
+                      <br />
+
+                      <Button variant="danger" type="submit">
+                        {editingComment ? (
+                          <>
+                            Update Comment {""}
+                            <FontAwesomeIcon icon={faCheck} />
+                          </>
+                        ) : (
+                          "Post Comment"
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="danger"
+                        onClick={() => cancelEditing()}
+                        style={{
+                          display: editingComment ? "inline-block" : "none",
+                        }}
+                      >
+                        Cancel Edit {""}
+                        <FontAwesomeIcon icon={faTimes} />
+                      </Button>
+                    </Form.Group>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </>
       )}
-    </div>
+    </Container>
   );
 }

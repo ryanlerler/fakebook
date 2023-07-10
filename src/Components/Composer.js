@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { ref as databaseRef, push, set } from "firebase/database";
 import {
@@ -11,8 +11,10 @@ import { v4 as uuidv4 } from "uuid";
 import { THREADS_DB_KEY, STORAGE_KEY, GOOGLE_MAPS_API_KEY } from "../constants";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../App";
 
-export default function Composer({ displayName, loggedInUser, email }) {
+export default function Composer() {
+  const user = useContext(UserContext);
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -21,7 +23,7 @@ export default function Composer({ displayName, loggedInUser, email }) {
   const [fileType, setFileType] = useState("");
 
   const determineFileType = (file) => {
-    const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "avif"];
     const videoExtensions = ["mp4", "mov", "mkv"];
     // Split the file name by dot to an array containing the file base name & the extension -> get the extension at the back by pop() -> convert the extension to lowercase to check against with the array of file extensions defined above in lowercase
     const extension = file.name.split(".").pop().toLowerCase();
@@ -59,6 +61,8 @@ export default function Composer({ displayName, loggedInUser, email }) {
         return "image"; // GIF file signature
       } else if (header.startsWith("52494646") && header.endsWith("57454250")) {
         return "image"; // WebP file signature
+      } else if (header.startsWith("000000206674797033677035")) {
+        return "image"; // AVIF file signature
       } else if (header.startsWith("66747970")) {
         return "video"; // MP4 file signature
       } else if (header.startsWith("00000018") && header.includes("6d6f6f76")) {
@@ -91,12 +95,12 @@ export default function Composer({ displayName, loggedInUser, email }) {
     const postRef = push(threadsRef);
     // Initialize likes object with initial value of false while the key dynamically represents the current logged in user
     const likes = {
-      [loggedInUser]: false,
+      [user.uid]: false,
     };
 
     set(postRef, {
       timeStamp: Date.now(),
-      displayName: displayName,
+      displayName: user.displayName,
       title: title,
       description: description,
       url: url,
@@ -104,7 +108,8 @@ export default function Composer({ displayName, loggedInUser, email }) {
       location: location,
       fileType: fileType ? fileType : "Unsupported format",
       fileRef: String(fileRef),
-      email: email,
+      email: user.email,
+      photoUrl: user.photoURL,
     });
 
     clearInputFields();
@@ -196,7 +201,7 @@ export default function Composer({ displayName, loggedInUser, email }) {
         <Form.Group className="mb-3">
           <Form.Label>
             Optional - <br />
-            Accepts ONE image (jpg, jpeg, png, gif, webp) OR <br />
+            Accepts ONE image (jpg, jpeg, png, gif, webp, avif) OR <br />
             ONE video (mp4, mov, mkv)
           </Form.Label>
           <Form.Control
@@ -209,7 +214,6 @@ export default function Composer({ displayName, loggedInUser, email }) {
         <Button variant="danger" type="submit">
           POST
         </Button>
-        <br />
         <br />
 
         <Button onClick={() => navigate(-1)}>Back</Button>

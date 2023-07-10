@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   ref as databaseRef,
   onChildAdded,
@@ -8,13 +8,26 @@ import {
 } from "firebase/database";
 import { database, storage } from "../firebase";
 import { THREADS_DB_KEY } from "../constants";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  InputGroup,
+  Row,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import NoImage from "../assets/Screenshot 2023-07-09 001928.png";
 import ScrollToTop from "react-scroll-to-top";
 import { ref as storageRef, deleteObject } from "firebase/storage";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { UserContext } from "../App";
 
-export default function Threads({ loggedInUser, email }) {
+export default function Threads() {
+  const user = useContext(UserContext);
   const [threads, setThreads] = useState([]);
   const [likes, setLikes] = useState({});
   const [userInput, setUserInput] = useState("");
@@ -50,7 +63,7 @@ export default function Threads({ loggedInUser, email }) {
 
   const handleLikes = (currentThreadKey) => {
     // First check if the current thread is already liked by the current logged in user
-    const isLiked = likes[currentThreadKey]?.[loggedInUser] || false;
+    const isLiked = likes[currentThreadKey]?.[user.uid] || false;
 
     // Update likes status depending on the current logged in user's actions
     const newLikes = {
@@ -66,7 +79,7 @@ export default function Threads({ loggedInUser, email }) {
 
         // Current logged in user's like status for each current thread
         // An object with key being the current logged in users's uids while value being a boolean value that toggles between true (liked)/ false (unliked) depending on the current logged in user's actions
-        [loggedInUser]: !isLiked,
+        [user.uid]: !isLiked,
       },
     };
 
@@ -122,9 +135,14 @@ export default function Threads({ loggedInUser, email }) {
                       />
                     ) : filteredThread.val.url &&
                       filteredThread.val.fileType === "video" ? (
-                      <video className="threads-video">
-                        <source src={filteredThread.val.url} />
-                      </video>
+                      <div className="video-container">
+                        <video className="threads-video">
+                          <source src={filteredThread.val.url} />
+                        </video>
+                        <div className="play-icon-overlay">
+                          <i className="fas fa-play"></i>
+                        </div>
+                      </div>
                     ) : (
                       <Card.Img
                         variant="top"
@@ -138,14 +156,47 @@ export default function Threads({ loggedInUser, email }) {
                   <Card.Body>
                     <Card.Title>{filteredThread.val.title}</Card.Title>
 
-                    <Button
-                      variant="white"
-                      onClick={() => handleLikes(filteredThread.key)}
-                    >
-                      ❤️ {likeCount}
-                    </Button>
+                    <Row>
+                      <Col>
+                        <Button
+                          variant="white"
+                          onClick={() => handleLikes(filteredThread.key)}
+                        >
+                          ❤️ {likeCount}
+                        </Button>
+                      </Col>
 
-                    <Card.Text>{filteredThread.val.displayName}</Card.Text>
+                      <Col>
+                        <Card.Text>{filteredThread.val.displayName}</Card.Text>
+                      </Col>
+                    </Row>
+
+                    <Button
+                      variant="danger"
+                      onClick={() => {
+                        // Delete file from storage
+                        const fileDeletionRef = storageRef(
+                          storage,
+                          filteredThread.val.fileRef
+                        );
+                        filteredThread.val.fileRef &&
+                          deleteObject(fileDeletionRef).then(() => {
+                            console.log("file deleted");
+                          });
+
+                        // Delete an entire post from database
+                        const postDeletionRef = databaseRef(
+                          database,
+                          `${THREADS_DB_KEY}/${filteredThread.key}`
+                        );
+                        remove(postDeletionRef).then(() => {
+                          console.log("entire post deleted");
+                        });
+                      }}
+                      hidden={user.email !== filteredThread.val.email}
+                    >
+                      <FontAwesomeIcon icon={faTrash} /> Delete
+                    </Button>
                   </Card.Body>
                 </Card>
               </Col>
@@ -172,9 +223,14 @@ export default function Threads({ loggedInUser, email }) {
                       className="thread-img"
                     />
                   ) : thread.val.url && thread.val.fileType === "video" ? (
-                    <video className="threads-video">
-                      <source src={thread.val.url} />
-                    </video>
+                    <div className="video-container">
+                      <video className="threads-video">
+                        <source src={thread.val.url} />
+                      </video>
+                      <div className="play-icon-overlay">
+                        <i className="fas fa-play"></i>
+                      </div>
+                    </div>
                   ) : (
                     <Card.Img
                       variant="top"
@@ -204,7 +260,7 @@ export default function Threads({ loggedInUser, email }) {
                   </Row>
 
                   <Button
-                    variant="dark"
+                    variant="danger"
                     onClick={() => {
                       // Delete file from storage
                       const fileDeletionRef = storageRef(
@@ -225,9 +281,9 @@ export default function Threads({ loggedInUser, email }) {
                         console.log("entire post deleted");
                       });
                     }}
-                    hidden={email !== thread.val.email}
+                    hidden={user.email !== thread.val.email}
                   >
-                    Delete
+                    <FontAwesomeIcon icon={faTrash} /> Delete
                   </Button>
                 </Card.Body>
               </Card>
@@ -237,22 +293,25 @@ export default function Threads({ loggedInUser, email }) {
       });
 
   return (
-    <div>
+    <Container>
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
+        <InputGroup className="mb-3">
           <Form.Control
             type="text"
-            placeholder="Search for a user"
+            placeholder="Search for a user's posts"
             value={userInput}
             onChange={({ target }) => setUserInput(target.value)}
             required
           />
-        </Form.Group>
+          <InputGroup.Text>
+            <FontAwesomeIcon icon={faSearch} onClick={handleSubmit} />
+          </InputGroup.Text>
+        </InputGroup>
       </Form>
 
       <Row xs={1} md={2} className="g-4">
         {threadsRendered.reverse()}
       </Row>
-    </div>
+    </Container>
   );
 }
