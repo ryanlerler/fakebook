@@ -15,6 +15,7 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [emailmessage, setEmailMessage] = useState("");
 
   // see the current state of the email
   const handleEmail = (e) => {
@@ -24,6 +25,21 @@ function LoginForm() {
   // see the current state of the password
   const handlePassword = (e) => {
     setPassword(e.target.value);
+  };
+
+  // This is to check is the email address enter conform to standard email address output. 
+  const checkEmailValidation = () => {
+    const RGEXPemail =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    if (RGEXPemail.test(email)) {
+      setEmailMessage("");
+    } else if (email === "") {
+      setEmailMessage("Please Enter Email");
+    } else if (!RGEXPemail.test(email)) {
+      setEmailMessage("Email is not valid");
+    } else {
+      setEmailMessage("");
+    }
   };
 
   // sign in and catching the error from firebase to reflect the message
@@ -43,6 +59,10 @@ function LoginForm() {
         console.log(errorMessage);
         if (errorCode === "auth/invalid-email") {
           setMessage("Please Key in a Valid Email Address.");
+        } else if (errorCode === "auth/user-not-found") {
+          setMessage(
+            "Email not on record, Kindly sign up account with email address! "
+          );
         } else if (errorCode === "auth/email-already-in-use") {
           setMessage("Email in use. Kindly pick another email ");
         } else if (errorCode === "auth/wrong-password") {
@@ -100,16 +120,23 @@ function LoginForm() {
                         onChange={handlePassword}
                       />
                     </Form.Group>
-                   
-                    <p className="text-danger">{message}</p>
-                    
-                    <Button className="w-100" onClick={signIn}>
+                    <p className="fs-6 text-danger">{emailmessage}</p>
+
+                    <p className="fs-6 text-danger">{message}</p>
+
+                    <Button
+                      className="w-100"
+                      onClick={() => {
+                        signIn();
+                        checkEmailValidation();
+                      }}
+                    >
                       Sign In
                     </Button>
                   </Form>
                 </Card.Body>
               </Card>
-              <br/>
+              <br />
               <div className="w-100 text-center mt2 fs-5">
                 Not yet a Member?
                 <Button onClick={() => navigate("/signup")}>Sign Up </Button>
