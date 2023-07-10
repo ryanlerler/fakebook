@@ -41,12 +41,12 @@ function SignUpForm() {
   const handleUserNameChange = (e) => {
     setUsername(e.target.value);
   };
-
+  // This to ensure that username input is not empty. 
   const checkUsernameValidation = () => {
     if (username === "") {
       setUsernameMessage("Please Key in username");
     } else {
-      setUsernameMessage("Valid Username");
+      setUsernameMessage("");
     }
   };
 
@@ -57,6 +57,7 @@ function SignUpForm() {
     setPasswordConfirmation(e.target.value);
   };
 
+  // This to check is the password in the password and confirm password field matches. 
   const checkPasswordValidation = () => {
     if (password === passwordconfirmation) {
       setPasswordMessage("Password matched!");
@@ -65,12 +66,13 @@ function SignUpForm() {
     }
   };
 
+  // Message prompt for new user if the email address in placed has been taken up. 
   const signUp = () => {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
         console.log(user);
-        updateProfile(auth.currentUser,{displayName: username})
+        updateProfile(auth.currentUser, { displayName: username });
         navigate("/threads");
       })
       .catch((error) => {
@@ -78,10 +80,10 @@ function SignUpForm() {
         console.log(errorCode);
         const errorMessage = error.message;
         console.log(errorMessage);
-        if(errorCode === "auth/email-already-in-use"){
+        if (errorCode === "auth/email-already-in-use") {
           setEmailMessage("Email in use. Kindly pick another email ");
-        }else{
-          return setEmailMessage("")
+        } else {
+          return setEmailMessage("");
         }
       });
   };
@@ -163,7 +165,7 @@ function SignUpForm() {
           <br />
           <div className="w-100 text-center mt2 fs-5">
             Already have an account?
-            <Button onClick={()=>navigate("/login")}>Log In </Button>
+            <Button onClick={() => navigate("/login")}>Log In </Button>
           </div>
         </div>
       </Container>
