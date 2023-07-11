@@ -13,12 +13,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
 import "../App.css";
-import {
-faEnvelope,
-  faArrowLeft,
-} from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 
 export default function Composer() {
   const user = useContext(UserContext);
@@ -116,7 +112,6 @@ export default function Composer() {
       fileType: fileType ? fileType : "Unsupported format",
       fileRef: String(fileRef),
       email: user.email,
-      photoUrl: user.photoURL,
     });
 
     clearInputFields();
@@ -202,14 +197,16 @@ export default function Composer() {
             value={description}
             onChange={({ target }) => setDescription(target.value)}
             required
+            minLength={3}
           />
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label className="fs-5">
-            Optional - <br />
-            Accepts ONE image (jpg, jpeg, png, gif, webp, avif) OR <br />
-            ONE video (mp4, mov, mkv)
+            Optional: <br />
+            Accepts <strong> ONE image </strong>(jpg, jpeg, png, gif, webp,
+            avif) OR <br />
+            <strong> ONE </strong>video (mp4, mov, mkv)
           </Form.Label>
           <Form.Control
             type="file"
@@ -223,7 +220,7 @@ export default function Composer() {
             icon={faEnvelope}
             style={{ marginRight: "0.5rem" }}
           />
-          POST
+          Post
         </Button>
         <br />
 

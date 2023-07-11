@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Link, Navigate, Route, Routes } from "react-router-dom";
 import { auth } from "./firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { Button, Container, Navbar } from "react-bootstrap";
+import { Button, CardImg, Container, Navbar } from "react-bootstrap";
 import Threads from "./Components/Threads";
 import Composer from "./Components/Composer";
 import Post from "./Components/Post";
@@ -42,18 +42,14 @@ function App() {
           {loggedInUser.uid && loggedInUser.accessToken && (
             <Navbar>
               <Container>
-                <Navbar.Brand href="#home">Signed in as: </Navbar.Brand>
-                <Navbar.Toggle />
-                <Navbar.Collapse className="justify-content-end">
-                  <Navbar.Text>
-                    <img
-                      src={loggedInUser.photoURL}
-                      alt="profilepic"
-                      className="avatar"
-                    />
-                    <a href="#login">{loggedInUser.displayName}</a>
-                  </Navbar.Text>
-                </Navbar.Collapse>
+                <CardImg
+                  src={loggedInUser.photoURL}
+                  alt="profilepic"
+                  className="avatar"
+                />
+                <Navbar.Brand>
+                  <strong>{loggedInUser.displayName}</strong>
+                </Navbar.Brand>
               </Container>
             </Navbar>
           )}

@@ -121,7 +121,7 @@ export default function Threads() {
 
           return (
             <div key={filteredThread.key}>
-              <ScrollToTop color="blue" width="15" height="15" />
+              <ScrollToTop color="black" width="15" height="15" />
 
               <Col>
                 <Card>
@@ -211,7 +211,7 @@ export default function Threads() {
 
         return (
           <div key={thread.key}>
-            <ScrollToTop color="blue" width="15" height="15" />
+            <ScrollToTop color="black" width="15" height="15" />
             <Col>
               <Card className="h-100">
                 <Link to={`/threads/${thread.key}`}>
@@ -240,7 +240,7 @@ export default function Threads() {
                     />
                   )}
                 </Link>
-                    {/*Start of Card Body */}
+                {/*Start of Card Body */}
                 <Card.Body>
                   <Card.Title className="fs-2">{thread.val.title}</Card.Title>
                   <div className="container text-center">

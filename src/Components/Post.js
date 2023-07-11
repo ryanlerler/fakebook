@@ -260,7 +260,7 @@ export default function Post() {
 
   return (
     <Container>
-      <ScrollToTop color="blue" width="15" height="15" />
+      <ScrollToTop color="black" width="15" height="15" />
 
       {post.key && (
         <>
@@ -276,7 +276,7 @@ export default function Post() {
                     variant="top"
                     src={post.val.url}
                     alt={post.val.title}
-                    className="thread-img"
+                    className="post-img"
                   />
                 ) : post.val.url && post.val.fileType === "video" ? (
                   <video autoPlay controls className="post-video">
@@ -287,7 +287,7 @@ export default function Post() {
                     variant="top"
                     src={NoImage}
                     alt={post.val.title}
-                    className="thread-img"
+                    className="post-img"
                   />
                 )}
 
@@ -366,7 +366,7 @@ export default function Post() {
               </Card>
             </Col>
 
-            <Col className="right">
+            <Col className="right-column">
               <Card>
                 <Card.Body>
                   <Form onSubmit={writeData}>
