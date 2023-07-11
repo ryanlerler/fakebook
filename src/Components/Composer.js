@@ -12,6 +12,13 @@ import { THREADS_DB_KEY, STORAGE_KEY, GOOGLE_MAPS_API_KEY } from "../constants";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../App";
+import "../App.css";
+import {
+faEnvelope,
+  faArrowLeft,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 
 export default function Composer() {
   const user = useContext(UserContext);
@@ -199,7 +206,7 @@ export default function Composer() {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>
+          <Form.Label className="fs-5">
             Optional - <br />
             Accepts ONE image (jpg, jpeg, png, gif, webp, avif) OR <br />
             ONE video (mp4, mov, mkv)
@@ -212,11 +219,21 @@ export default function Composer() {
         </Form.Group>
 
         <Button variant="danger" type="submit">
+          <FontAwesomeIcon
+            icon={faEnvelope}
+            style={{ marginRight: "0.5rem" }}
+          />
           POST
         </Button>
         <br />
 
-        <Button onClick={() => navigate(-1)}>Back</Button>
+        <Button onClick={() => navigate(-1)}>
+          <FontAwesomeIcon
+            icon={faArrowLeft}
+            style={{ marginRight: "0.5rem" }}
+          />
+          Back
+        </Button>
       </Form>
     </div>
   );

@@ -6,7 +6,7 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { ProfilePic } from "./ProfilePic";
+//import { ProfilePic } from "./ProfilePic";
 
 function SignUpForm() {
   // Setting State

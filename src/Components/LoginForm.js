@@ -92,7 +92,7 @@ function LoginForm() {
         <div className="w-100" style={{ maxWidth: "800px" }}>
           <Row>
             <Col>
-              <Card className="bg-transparent text-body mt-4">
+              <Card className="bg-transparent border border-0 text-body mt-4">
                 <Card.Body>
                   <h2 className="text-center mb-5  text-primary">FakeBook</h2>
                   <div className="fs-2">
