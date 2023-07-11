@@ -153,12 +153,12 @@ export default function Composer() {
         },
         // If user blocks location access
         () => {
-          const uniqueFileName = fileInputFile.name + uuidv4();
-          const fileRef = storageRef(
-            storage,
-            `${STORAGE_KEY}${uniqueFileName}`
-          );
           if (fileInputFile && fileType) {
+            const uniqueFileName = fileInputFile.name + uuidv4();
+            const fileRef = storageRef(
+              storage,
+              `${STORAGE_KEY}${uniqueFileName}`
+            );
             uploadBytes(fileRef, fileInputFile)
               .then(() => {
                 getDownloadURL(fileRef).then((url) =>

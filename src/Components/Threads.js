@@ -124,7 +124,7 @@ export default function Threads() {
               <ScrollToTop color="black" width="15" height="15" />
 
               <Col>
-                <Card>
+                <Card className="h-100">
                   <Link to={`/threads/${filteredThread.key}`}>
                     {filteredThread.val.url &&
                     filteredThread.val.fileType === "image" ? (
@@ -155,22 +155,28 @@ export default function Threads() {
                   </Link>
 
                   <Card.Body>
-                    <Card.Title>{filteredThread.val.title}</Card.Title>
+                    <Card.Title className="fs-2">
+                      {filteredThread.val.title}
+                    </Card.Title>
 
-                    <Row>
-                      <Col>
-                        <Button
-                          variant="white"
-                          onClick={() => handleLikes(filteredThread.key)}
-                        >
-                          ❤️ {likeCount}
-                        </Button>
-                      </Col>
+                    <div className="container text-center">
+                      <Row>
+                        <Col>
+                          <Button
+                            variant="white"
+                            onClick={() => handleLikes(filteredThread.key)}
+                          >
+                            ❤️ {likeCount}
+                          </Button>
+                        </Col>
 
-                      <Col>
-                        <Card.Text>{filteredThread.val.displayName}</Card.Text>
-                      </Col>
-                    </Row>
+                        <Col>
+                          <Card.Text className="fs-5 pt-3">
+                            {filteredThread.val.displayName}
+                          </Card.Text>
+                        </Col>
+                      </Row>
+                    </div>
 
                     <Button
                       variant="danger"
@@ -240,7 +246,7 @@ export default function Threads() {
                     />
                   )}
                 </Link>
-                {/*Start of Card Body */}
+
                 <Card.Body>
                   <Card.Title className="fs-2">{thread.val.title}</Card.Title>
                   <div className="container text-center">

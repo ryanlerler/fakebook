@@ -147,11 +147,13 @@ a {
 .left-column {
   position: sticky;
   top: 0;
+  overflow-y: auto;
+  height: calc(100vh - 20px);
 }
 
 .right-column {
   overflow-y: auto;
-  height: calc(100vh - 20px); /* Adjust the height based on your layout */
+  height: calc(100vh - 20px);
 }
 
 .post-img {
