@@ -6,7 +6,11 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-//import { ProfilePic } from "./ProfilePic";
+import {
+  faUserPlus,
+  faRightToBracket,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function SignUpForm() {
   // Setting State
@@ -178,6 +182,10 @@ function SignUpForm() {
                   }}
                   className="w-100"
                 >
+                  <FontAwesomeIcon
+                    icon={faUserPlus}
+                    style={{ marginRight: "0.5rem" }}
+                  />
                   Sign Up
                 </Button>
               </Form>
@@ -186,7 +194,13 @@ function SignUpForm() {
           <br />
           <div className="w-100 text-center mt2 fs-5">
             Already have an account?
-            <Button onClick={() => navigate("/login")}>Log In </Button>
+            <Button onClick={() => navigate("/login")}>
+              Sign In
+              <FontAwesomeIcon
+                icon={faRightToBracket}
+                style={{ marginLeft: "0.5rem" }}
+              />
+            </Button>
           </div>
         </div>
       </Container>
