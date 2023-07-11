@@ -8,7 +8,11 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-
+import {
+faUserPlus,
+faRightToBracket
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 function LoginForm() {
   // Setting State
   const navigate = useNavigate();
@@ -141,6 +145,10 @@ function LoginForm() {
                       }}
                     >
                       Sign In
+                      <FontAwesomeIcon
+                        icon={faRightToBracket}
+                        style={{ marginLeft: "0.5rem" }}
+                      />
                     </Button>
                   </Form>
                 </Card.Body>
@@ -148,7 +156,13 @@ function LoginForm() {
               <br />
               <div className="w-100 text-center mt2 fs-5">
                 Not yet a Member?
-                <Button onClick={() => navigate("/signup")}>Sign Up </Button>
+                <Button onClick={() => navigate("/signup")}>
+                  <FontAwesomeIcon
+                    icon={faUserPlus}
+                    style={{ marginRight:"0.5rem" }}
+                  />
+                  Sign Up
+                </Button>
               </div>
             </Col>
           </Row>
