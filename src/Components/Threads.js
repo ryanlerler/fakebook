@@ -25,6 +25,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { faTrash, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserContext } from "../App";
+import "../App.css";
 
 export default function Threads() {
   const user = useContext(UserContext);
@@ -211,9 +212,8 @@ export default function Threads() {
         return (
           <div key={thread.key}>
             <ScrollToTop color="blue" width="15" height="15" />
-
             <Col>
-              <Card>
+              <Card className="h-100">
                 <Link to={`/threads/${thread.key}`}>
                   {thread.val.url && thread.val.fileType === "image" ? (
                     <Card.Img
@@ -240,25 +240,27 @@ export default function Threads() {
                     />
                   )}
                 </Link>
-
+                    {/*Start of Card Body */}
                 <Card.Body>
-                  <Card.Title>{thread.val.title}</Card.Title>
+                  <Card.Title className="fs-2">{thread.val.title}</Card.Title>
+                  <div className="container text-center">
+                    <Row>
+                      <Col>
+                        <Button
+                          variant="white"
+                          onClick={() => handleLikes(thread.key)}
+                        >
+                          ❤️ {likeCount}
+                        </Button>
+                      </Col>
 
-                  <Row>
-                    <Col>
-                      <Button
-                        variant="white"
-                        onClick={() => handleLikes(thread.key)}
-                      >
-                        ❤️ {likeCount}
-                      </Button>
-                    </Col>
-
-                    <Col>
-                      <Card.Text>{thread.val.displayName}</Card.Text>
-                    </Col>
-                  </Row>
-
+                      <Col>
+                        <Card.Text className="fs-5 pt-3">
+                          {thread.val.displayName}
+                        </Card.Text>
+                      </Col>
+                    </Row>
+                  </div>
                   <Button
                     variant="danger"
                     onClick={() => {

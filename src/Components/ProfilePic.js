@@ -3,7 +3,7 @@ import Container from "react-bootstrap/Container";
 import { Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./ProfilePic.css";
+import "../App.css";
 import { updateProfile, reload } from "firebase/auth";
 import { auth, storage } from "../firebase";
 import {

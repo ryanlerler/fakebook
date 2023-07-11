@@ -21,9 +21,11 @@ import {
   faCheck,
   faTimes,
   faArrowLeft,
+  faEnvelope,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { UserContext } from "../App";
+import "../App.css";
 
 const filter = new Filter();
 
@@ -263,9 +265,9 @@ export default function Post() {
       {post.key && (
         <>
           <Row>
-            <Col>
+            <Col className="left-column">
               <Card>
-                <Card.Text>
+                <Card.Text className="fs-2">
                   <strong>{post.val.displayName} </strong>
                 </Card.Text>
 
@@ -293,7 +295,6 @@ export default function Post() {
                   {editMode ? (
                     <div>
                       <Form.Group className="mb-3">
-                        <Form.Label>Title</Form.Label>
                         <Form.Control
                           type="text"
                           value={updatedPost.title || post.val.title}
@@ -331,15 +332,17 @@ export default function Post() {
                     </div>
                   ) : (
                     <div>
-                      <Card.Title>{post.val.title}</Card.Title>
-                      <Card.Text>{post.val.description}</Card.Text>
-                      <Card.Text>
+                      <Card.Title className="fs-2">{post.val.title}</Card.Title>
+                      <Card.Text className="fs-5">
+                        {post.val.description}
+                      </Card.Text>
+                      <Card.Footer className="fs-6">
                         {formatRelative(
                           subDays(post.val.timeStamp, 0),
                           new Date()
                         )}{" "}
                         - {post.val.location}
-                      </Card.Text>
+                      </Card.Footer>
                       <Button
                         variant="white"
                         onClick={() => handleLikes(post.key)}
@@ -363,7 +366,7 @@ export default function Post() {
               </Card>
             </Col>
 
-            <Col>
+            <Col className="right">
               <Card>
                 <Card.Body>
                   <Form onSubmit={writeData}>
@@ -372,13 +375,15 @@ export default function Post() {
                       {comments && comments.length > 0 ? (
                         comments.map((comment) => (
                           <div key={comment.timeStamp}>
-                            <Card.Text>
+                            <Card.Text className="fs-5 ">
                               <strong>{comment.displayName} </strong>
                             </Card.Text>
 
-                            <Card.Text>{comment.comment}</Card.Text>
+                            <Card.Text className="fs-5">
+                              {comment.comment}
+                            </Card.Text>
 
-                            <Card.Text>
+                            <Card.Footer className="fs-6">
                               {formatDistance(
                                 new Date(comment.timeStamp),
                                 new Date(),
@@ -387,7 +392,7 @@ export default function Post() {
                                 }
                               )}
                               - {comment.location}
-                            </Card.Text>
+                            </Card.Footer>
 
                             {user.email === comment.email && (
                               <>
@@ -449,7 +454,9 @@ export default function Post() {
                             <FontAwesomeIcon icon={faCheck} />
                           </>
                         ) : (
-                          "Post Comment"
+                          <>
+                            <FontAwesomeIcon icon={faEnvelope} /> Post Comment
+                          </>
                         )}
                       </Button>
 
