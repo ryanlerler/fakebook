@@ -171,39 +171,41 @@ export default function Threads() {
                         </Col>
 
                         <Col>
-                          <Card.Text className="fs-5 pt-3">
+                          <Button
+                            variant="danger"
+                            onClick={() => {
+                              // Delete file from storage
+                              const fileDeletionRef = storageRef(
+                                storage,
+                                filteredThread.val.fileRef
+                              );
+                              filteredThread.val.fileRef &&
+                                deleteObject(fileDeletionRef).then(() => {
+                                  console.log("file deleted");
+                                });
+
+                              // Delete an entire post from database
+                              const postDeletionRef = databaseRef(
+                                database,
+                                `${THREADS_DB_KEY}/${filteredThread.key}`
+                              );
+                              remove(postDeletionRef).then(() => {
+                                console.log("entire post deleted");
+                              });
+                            }}
+                            hidden={user.email !== filteredThread.val.email}
+                          >
+                            <FontAwesomeIcon icon={faTrash} /> Delete
+                          </Button>
+                        </Col>
+
+                        <Col>
+                          <Card.Text className="fs-5 pt-2">
                             {filteredThread.val.displayName}
                           </Card.Text>
                         </Col>
                       </Row>
                     </div>
-
-                    <Button
-                      variant="danger"
-                      onClick={() => {
-                        // Delete file from storage
-                        const fileDeletionRef = storageRef(
-                          storage,
-                          filteredThread.val.fileRef
-                        );
-                        filteredThread.val.fileRef &&
-                          deleteObject(fileDeletionRef).then(() => {
-                            console.log("file deleted");
-                          });
-
-                        // Delete an entire post from database
-                        const postDeletionRef = databaseRef(
-                          database,
-                          `${THREADS_DB_KEY}/${filteredThread.key}`
-                        );
-                        remove(postDeletionRef).then(() => {
-                          console.log("entire post deleted");
-                        });
-                      }}
-                      hidden={user.email !== filteredThread.val.email}
-                    >
-                      <FontAwesomeIcon icon={faTrash} /> Delete
-                    </Button>
                   </Card.Body>
                 </Card>
               </Col>
@@ -261,38 +263,41 @@ export default function Threads() {
                       </Col>
 
                       <Col>
-                        <Card.Text className="fs-5 pt-3">
+                        <Button
+                          variant="danger"
+                          onClick={() => {
+                            // Delete file from storage
+                            const fileDeletionRef = storageRef(
+                              storage,
+                              thread.val.fileRef
+                            );
+                            thread.val.fileRef &&
+                              deleteObject(fileDeletionRef).then(() => {
+                                console.log("file deleted");
+                              });
+
+                            // Delete an entire post from database
+                            const postDeletionRef = databaseRef(
+                              database,
+                              `${THREADS_DB_KEY}/${thread.key}`
+                            );
+                            remove(postDeletionRef).then(() => {
+                              console.log("entire post deleted");
+                            });
+                          }}
+                          hidden={user.email !== thread.val.email}
+                        >
+                          <FontAwesomeIcon icon={faTrash} /> Delete
+                        </Button>
+                      </Col>
+
+                      <Col>
+                        <Card.Text className="fs-5 pt-2">
                           {thread.val.displayName}
                         </Card.Text>
                       </Col>
                     </Row>
                   </div>
-                  <Button
-                    variant="danger"
-                    onClick={() => {
-                      // Delete file from storage
-                      const fileDeletionRef = storageRef(
-                        storage,
-                        thread.val.fileRef
-                      );
-                      thread.val.fileRef &&
-                        deleteObject(fileDeletionRef).then(() => {
-                          console.log("file deleted");
-                        });
-
-                      // Delete an entire post from database
-                      const postDeletionRef = databaseRef(
-                        database,
-                        `${THREADS_DB_KEY}/${thread.key}`
-                      );
-                      remove(postDeletionRef).then(() => {
-                        console.log("entire post deleted");
-                      });
-                    }}
-                    hidden={user.email !== thread.val.email}
-                  >
-                    <FontAwesomeIcon icon={faTrash} /> Delete
-                  </Button>
                 </Card.Body>
               </Card>
             </Col>
