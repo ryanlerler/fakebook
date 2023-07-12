@@ -186,7 +186,7 @@ export default function Composer() {
             onChange={({ target }) => setTitle(target.value)}
             required
             minLength={3}
-            maxLength={64}
+            maxLength={35}
           />
         </Form.Group>
 

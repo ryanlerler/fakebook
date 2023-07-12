@@ -151,6 +151,7 @@ export default function Post() {
             comment: cleanedComment,
             timeStamp: Date.now(),
             location: "Earth",
+            email: user.email,
           };
 
           const allComments = [...comments, newComment];
