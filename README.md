@@ -1,3 +1,9 @@
+LOG IN CREDENTIALS
+Email:
+lyp2726@outlook.com
+Password: 
+111111
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

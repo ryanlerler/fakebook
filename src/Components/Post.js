@@ -112,6 +112,7 @@ export default function Post() {
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&result_type=country&key=${GOOGLE_MAPS_API_KEY}`
             )
             .then((data) => {
+              console.log(data);
               const location = data.data.results[0].formatted_address;
               const threadRef = databaseRef(
                 database,
