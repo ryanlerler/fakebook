@@ -1,77 +1,50 @@
-LOG IN CREDENTIALS
+**LOG IN CREDENTIALS**
+
 Email:
+
 lyp2726@outlook.com
+
 Password: 
+
 111111
 
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**Project 2 Full Stack app - Social app**
 
-## Available Scripts
+**Description:**
 
-In the project directory, you can run:
+This customized social media platform aims to promote freedom and privacy open to all users around the world while eliminating restrictions featured in some social apps, e.g. the need to upload a media file to make a post and real-name policy. Each post comes with the author's current country location for a sense of globalization. Bad words in the comments will be sanitized to ensure harmonious community.
 
-### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+**Technologies:**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Javascript, React.js, React-Bootstrap, Google Firebase, Google Maps API, Axios
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Why Fakebook?**
 
-### `npm run build`
+No worries of social media app tracking your activities/ reading your minds
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+No collection of data except for email
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+File upload is optional
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Flexibility to allow/ block request to access your location (compulsory & thus a controversial feat in XiaoHongShu) - tracks & store only country name by Google Maps API in db
 
-### `npm run eject`
+No unnecessary features
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**Learning Points**
+The need to separate frontend (repo) from backend (repo)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Importance of initial planning, routing, & structuring db
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Use File Reader & file signature to check file types
 
-## Learn More
+Reverse geocoding with Google Maps API
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Use of useParams hook to route to each post
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Use of NPM packages 
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# fakebook
+Deal with async nature of Firebase - store data in state & update the state with useState for immediate re-render
